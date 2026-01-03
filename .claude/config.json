@@ -86,6 +86,11 @@
       "path": "skills/communication/value-narrative.md",
       "description": "Generate elegant narratives articulating product capabilities and business value",
       "category": "communication"
+    },
+    "platform-analytics": {
+      "path": "skills/analytics/platform-analytics.md",
+      "description": "Comprehensive analytics for platform engineering: data collection, visualization, and analysis with REST/GraphQL APIs",
+      "category": "analytics"
     }
   },
   "templates": {
