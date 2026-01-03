@@ -34,6 +34,11 @@
       "path": "agents/risk/risk-agent.md",
       "description": "Risk, Compliance & Security Oversight agent",
       "tags": ["risk", "compliance", "security", "audit"]
+    },
+    "policy-agent": {
+      "path": "agents/policy/policy-agent.md",
+      "description": "Policy as Code agent for OPA Rego policy analysis and generation",
+      "tags": ["policy", "opa", "rego", "compliance", "security"]
     }
   },
   "skills": {
@@ -96,6 +101,11 @@
       "path": "skills/visualization/mindmap-generator.md",
       "description": "Generate interactive hierarchical mindmaps for platform concepts, architecture, roadmaps, and stakeholder relationships",
       "category": "visualization"
+    },
+    "policy-generator": {
+      "path": "skills/policy/policy-generator.md",
+      "description": "Generate OPA Rego policies from plain English requirements with compliance mapping",
+      "category": "policy"
     }
   },
   "templates": {
