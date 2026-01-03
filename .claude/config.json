@@ -39,6 +39,11 @@
       "path": "agents/policy/policy-agent.md",
       "description": "Policy as Code agent for OPA Rego policy analysis and generation",
       "tags": ["policy", "opa", "rego", "compliance", "security"]
+    },
+    "product-prototyping-agent": {
+      "path": "agents/product/product-prototyping-agent.md",
+      "description": "Dynamic product prototyping agent that generates divergent prototypes using OpenSpec/spec-kit for user validation",
+      "tags": ["product", "prototyping", "ux", "validation", "openspec"]
     }
   },
   "skills": {
@@ -106,6 +111,11 @@
       "path": "skills/policy/policy-generator.md",
       "description": "Generate OPA Rego policies from plain English requirements with compliance mapping",
       "category": "policy"
+    },
+    "prototype-generator": {
+      "path": "skills/product/prototype-generator.md",
+      "description": "Generate 3 divergent functional prototypes from requirements using OpenSpec/spec-kit with validation frameworks",
+      "category": "product"
     }
   },
   "templates": {
