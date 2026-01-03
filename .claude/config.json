@@ -91,6 +91,11 @@
       "path": "skills/analytics/platform-analytics.md",
       "description": "Comprehensive analytics for platform engineering: data collection, visualization, and analysis with REST/GraphQL APIs",
       "category": "analytics"
+    },
+    "mindmap-generator": {
+      "path": "skills/visualization/mindmap-generator.md",
+      "description": "Generate interactive hierarchical mindmaps for platform concepts, architecture, roadmaps, and stakeholder relationships",
+      "category": "visualization"
     }
   },
   "templates": {
