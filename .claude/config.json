@@ -81,6 +81,11 @@
       "path": "skills/delivery/dependency-analysis.md",
       "description": "Analyze cross-team and cross-vertical dependencies",
       "category": "delivery"
+    },
+    "value-narrative": {
+      "path": "skills/communication/value-narrative.md",
+      "description": "Generate elegant narratives articulating product capabilities and business value",
+      "category": "communication"
     }
   },
   "templates": {
