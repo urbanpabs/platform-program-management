@@ -1,0 +1,22 @@
+{
+  "name": "platform-program-management",
+  "version": "1.0.0",
+  "description": "Claude Code agent and skill templates for Platform Program Management lifecycle",
+  "type": "module",
+  "keywords": [
+    "platform-engineering",
+    "program-management",
+    "claude-code",
+    "agents",
+    "skills",
+    "devops",
+    "transformation"
+  ],
+  "author": "Platform Engineering Team",
+  "license": "MIT",
+  "scripts": {
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

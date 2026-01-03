@@ -1,0 +1,94 @@
+{
+  "agents": {
+    "strategy-agent": {
+      "path": "agents/strategy/strategy-agent.md",
+      "description": "Platform Strategy & Vision agent for roadmapping and value definition",
+      "tags": ["strategy", "roadmap", "vision", "mvp"]
+    },
+    "financial-agent": {
+      "path": "agents/financial/financial-agent.md",
+      "description": "Financial Stewardship agent for ROI, budgeting, and vendor management",
+      "tags": ["financial", "roi", "budget", "capex", "opex", "vendor"]
+    },
+    "stakeholder-agent": {
+      "path": "agents/stakeholder/stakeholder-agent.md",
+      "description": "Stakeholder Management agent for alignment and engagement",
+      "tags": ["stakeholder", "communication", "alignment"]
+    },
+    "delivery-agent": {
+      "path": "agents/delivery/delivery-agent.md",
+      "description": "Delivery & Execution agent for coordination and dependencies",
+      "tags": ["delivery", "execution", "dependencies", "milestones"]
+    },
+    "governance-agent": {
+      "path": "agents/governance/governance-agent.md",
+      "description": "Governance & Communication agent for reporting and accountability",
+      "tags": ["governance", "reporting", "accountability"]
+    },
+    "integration-agent": {
+      "path": "agents/integration/integration-agent.md",
+      "description": "People, Process, Tech Integration agent",
+      "tags": ["integration", "process", "organization"]
+    },
+    "risk-agent": {
+      "path": "agents/risk/risk-agent.md",
+      "description": "Risk, Compliance & Security Oversight agent",
+      "tags": ["risk", "compliance", "security", "audit"]
+    }
+  },
+  "skills": {
+    "create-roadmap": {
+      "path": "skills/strategy/create-roadmap.md",
+      "description": "Generate a multi-year platform transformation roadmap",
+      "category": "strategy"
+    },
+    "define-mvp": {
+      "path": "skills/strategy/define-mvp.md",
+      "description": "Define Minimum Viable Platform scope and requirements",
+      "category": "strategy"
+    },
+    "calculate-roi": {
+      "path": "skills/financial/calculate-roi.md",
+      "description": "Calculate platform transformation ROI",
+      "category": "financial"
+    },
+    "budget-forecast": {
+      "path": "skills/financial/budget-forecast.md",
+      "description": "Generate budget forecast for fiscal period",
+      "category": "financial"
+    },
+    "vendor-analysis": {
+      "path": "skills/financial/vendor-analysis.md",
+      "description": "Compare vendor options with TCO analysis",
+      "category": "financial"
+    },
+    "stakeholder-map": {
+      "path": "skills/stakeholder/stakeholder-map.md",
+      "description": "Create stakeholder influence and engagement map",
+      "category": "stakeholder"
+    },
+    "exec-briefing": {
+      "path": "skills/governance/exec-briefing.md",
+      "description": "Generate executive briefing document",
+      "category": "governance"
+    },
+    "risk-assessment": {
+      "path": "skills/risk/risk-assessment.md",
+      "description": "Comprehensive platform program risk assessment",
+      "category": "risk"
+    },
+    "dependency-analysis": {
+      "path": "skills/delivery/dependency-analysis.md",
+      "description": "Analyze cross-team and cross-vertical dependencies",
+      "category": "delivery"
+    }
+  },
+  "templates": {
+    "roadmap-template": "templates/roadmaps/transformation-roadmap.md",
+    "mvp-template": "templates/roadmaps/mvp-definition.md",
+    "roi-template": "templates/reports/roi-report.md",
+    "budget-template": "templates/reports/budget-forecast.md",
+    "exec-report-template": "templates/reports/executive-status.md",
+    "stakeholder-map-template": "templates/frameworks/stakeholder-mapping.md"
+  }
+}
