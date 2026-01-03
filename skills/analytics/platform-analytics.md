@@ -1165,12 +1165,12 @@ This skill provides comprehensive analytics across the platform engineering life
 6. **Export Layer**: Scheduled reports (PDF, CSV, Excel)
 
 **Technology Stack**:
-- Backend: Node.js/Python FastAPI
+- Backend: Flask/Python FastAPI/Node.js Express
 - Database: PostgreSQL + TimescaleDB extension
 - Cache: Redis
 - Message Queue: Kafka
 - Visualization: Grafana + custom React dashboards
-- API: REST (Express) + GraphQL (Apollo Server)
+- API: REST (Express/Flask) + GraphQL (Apollo Server)
 
 **Data Sources**:
 - GitHub API (commits, PRs, builds)
@@ -1182,6 +1182,1088 @@ This skill provides comprehensive analytics across the platform engineering life
 
 ---
 
+## Flask Backend Implementation
+
+### Flask REST API Server
+
+**Project Structure**:
+```
+platform-analytics-api/
+├── app/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── platform_stack.py
+│   │   ├── pipeline_metrics.py
+│   │   ├── developer_experience.py
+│   │   └── revenue_impact.py
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── analytics.py
+│   │   ├── platform_stack.py
+│   │   ├── pipeline_metrics.py
+│   │   ├── developer_experience.py
+│   │   ├── cost_analytics.py
+│   │   └── revenue_impact.py
+│   ├── services/
+│   │   ├── __init__.py
+│   │   ├── data_collector.py
+│   │   ├── aggregator.py
+│   │   └── forecaster.py
+│   └── utils/
+│       ├── __init__.py
+│       ├── auth.py
+│       └── validators.py
+├── tests/
+│   ├── test_analytics.py
+│   └── test_pipeline_metrics.py
+├── requirements.txt
+├── wsgi.py
+└── README.md
+```
+
+**Core Flask Application (`app/__init__.py`)**:
+```python
+from flask import Flask
+from flask_cors import CORS
+from flask_sqlalchemy import SQLAlchemy
+from flask_caching import Cache
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
+db = SQLAlchemy()
+cache = Cache()
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["1000 per hour"]
+)
+
+def create_app(config_name='development'):
+    app = Flask(__name__)
+    app.config.from_object(f'app.config.{config_name}')
+
+    # Enable CORS for React/Vite frontend
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": [
+                "http://localhost:5173",  # Vite default
+                "http://localhost:3000",  # React default
+                "http://localhost:4200",  # Angular default
+                "http://localhost:8080"   # Vue default
+            ]
+        }
+    })
+
+    # Initialize extensions
+    db.init_app(app)
+    cache.init_app(app)
+    limiter.init_app(app)
+
+    # Register blueprints
+    from app.routes.analytics import analytics_bp
+    from app.routes.platform_stack import platform_stack_bp
+    from app.routes.pipeline_metrics import pipeline_metrics_bp
+    from app.routes.developer_experience import dx_bp
+    from app.routes.cost_analytics import cost_bp
+    from app.routes.revenue_impact import revenue_bp
+
+    app.register_blueprint(analytics_bp, url_prefix='/api/v1')
+    app.register_blueprint(platform_stack_bp, url_prefix='/api/v1')
+    app.register_blueprint(pipeline_metrics_bp, url_prefix='/api/v1')
+    app.register_blueprint(dx_bp, url_prefix='/api/v1')
+    app.register_blueprint(cost_bp, url_prefix='/api/v1')
+    app.register_blueprint(revenue_bp, url_prefix='/api/v1')
+
+    return app
+```
+
+**Configuration (`app/config.py`)**:
+```python
+import os
+from datetime import timedelta
+
+class Config:
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
+        'postgresql://user:password@localhost/platform_analytics'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    # Cache configuration
+    CACHE_TYPE = 'redis'
+    CACHE_REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
+    CACHE_DEFAULT_TIMEOUT = 300
+
+    # API rate limiting
+    RATELIMIT_STORAGE_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/1'
+
+    # JWT authentication
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or 'jwt-secret-key'
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
+
+class DevelopmentConfig(Config):
+    DEBUG = True
+
+class ProductionConfig(Config):
+    DEBUG = False
+
+class TestingConfig(Config):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+```
+
+**Platform Stack Analytics Route (`app/routes/platform_stack.py`)**:
+```python
+from flask import Blueprint, request, jsonify
+from app.services.data_collector import PlatformStackCollector
+from app.utils.auth import require_api_key
+from app import cache
+
+platform_stack_bp = Blueprint('platform_stack', __name__)
+
+@platform_stack_bp.route('/analytics/platform-stack', methods=['GET'])
+@require_api_key
+@cache.cached(timeout=300, query_string=True)
+def get_platform_stack_health():
+    """
+    Get platform stack health metrics
+
+    Query Parameters:
+        - platform: string (optional, filter by platform name)
+        - time_range: string (default: 24h)
+        - aggregation: string (default: hourly)
+    """
+    platform = request.args.get('platform')
+    time_range = request.args.get('time_range', '24h')
+    aggregation = request.args.get('aggregation', 'hourly')
+
+    collector = PlatformStackCollector()
+    data = collector.get_health_metrics(
+        platform=platform,
+        time_range=time_range,
+        aggregation=aggregation
+    )
+
+    return jsonify(data), 200
+
+@platform_stack_bp.route('/analytics/platform-stack/status', methods=['GET'])
+@require_api_key
+def get_platform_status():
+    """Get real-time platform status"""
+    collector = PlatformStackCollector()
+    status = collector.get_real_time_status()
+    return jsonify(status), 200
+```
+
+**Pipeline Metrics Route (`app/routes/pipeline_metrics.py`)**:
+```python
+from flask import Blueprint, request, jsonify
+from app.services.data_collector import PipelineMetricsCollector
+from app.utils.auth import require_api_key
+from app import cache
+
+pipeline_metrics_bp = Blueprint('pipeline_metrics', __name__)
+
+@pipeline_metrics_bp.route('/analytics/pipeline-metrics', methods=['GET'])
+@require_api_key
+@cache.cached(timeout=60, query_string=True)
+def get_pipeline_metrics():
+    """
+    Get pipeline performance metrics
+
+    Query Parameters:
+        - time_range: string (default: 7d)
+        - tech_stack: string (optional)
+        - aggregation: string (default: daily)
+    """
+    time_range = request.args.get('time_range', '7d')
+    tech_stack = request.args.get('tech_stack')
+    aggregation = request.args.get('aggregation', 'daily')
+
+    collector = PipelineMetricsCollector()
+    data = collector.get_metrics(
+        time_range=time_range,
+        tech_stack=tech_stack,
+        aggregation=aggregation
+    )
+
+    return jsonify(data), 200
+
+@pipeline_metrics_bp.route('/analytics/pipeline-metrics/real-time', methods=['GET'])
+@require_api_key
+def get_real_time_pipeline_metrics():
+    """Get real-time pipeline metrics (no cache)"""
+    collector = PipelineMetricsCollector()
+    data = collector.get_real_time_metrics()
+    return jsonify(data), 200
+```
+
+**Developer Experience Route (`app/routes/developer_experience.py`)**:
+```python
+from flask import Blueprint, request, jsonify
+from app.services.data_collector import DeveloperExperienceCollector
+from app.utils.auth import require_api_key
+from app import cache
+
+dx_bp = Blueprint('developer_experience', __name__)
+
+@dx_bp.route('/analytics/developer-experience', methods=['GET'])
+@require_api_key
+@cache.cached(timeout=3600, query_string=True)
+def get_developer_experience():
+    """
+    Get developer experience scores
+
+    Query Parameters:
+        - tech_stack: string (optional, filter by tech)
+        - time_range: string (default: 30d)
+    """
+    tech_stack = request.args.get('tech_stack')
+    time_range = request.args.get('time_range', '30d')
+
+    collector = DeveloperExperienceCollector()
+    data = collector.get_dx_scores(
+        tech_stack=tech_stack,
+        time_range=time_range
+    )
+
+    return jsonify(data), 200
+```
+
+**Authentication Utility (`app/utils/auth.py`)**:
+```python
+from functools import wraps
+from flask import request, jsonify
+import os
+
+def require_api_key(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        api_key = request.headers.get('X-API-Key')
+
+        if not api_key:
+            return jsonify({'error': 'API key required'}), 401
+
+        # Validate API key (in production, check against database)
+        valid_api_keys = os.environ.get('VALID_API_KEYS', '').split(',')
+        if api_key not in valid_api_keys:
+            return jsonify({'error': 'Invalid API key'}), 403
+
+        return f(*args, **kwargs)
+
+    return decorated_function
+```
+
+**Requirements (`requirements.txt`)**:
+```txt
+Flask==3.0.0
+Flask-CORS==4.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Caching==2.1.0
+Flask-Limiter==3.5.0
+psycopg2-binary==2.9.9
+redis==5.0.1
+requests==2.31.0
+python-dotenv==1.0.0
+gunicorn==21.2.0
+```
+
+**WSGI Entry Point (`wsgi.py`)**:
+```python
+from app import create_app
+import os
+
+app = create_app(os.environ.get('FLASK_ENV', 'production'))
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+```
+
+---
+
+## React/Vite Frontend Integration
+
+### Vite React Dashboard
+
+**Project Structure**:
+```
+platform-analytics-dashboard/
+├── src/
+│   ├── components/
+│   │   ├── PlatformStackHealth.jsx
+│   │   ├── PipelineMetrics.jsx
+│   │   ├── DeveloperExperience.jsx
+│   │   ├── ThroughputChart.jsx
+│   │   ├── CostAnalytics.jsx
+│   │   └── RevenueImpact.jsx
+│   ├── services/
+│   │   └── analyticsApi.js
+│   ├── hooks/
+│   │   └── useAnalytics.js
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+├── package.json
+├── vite.config.js
+└── README.md
+```
+
+**Analytics API Service (`src/services/analyticsApi.js`)**:
+```javascript
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+const API_KEY = import.meta.env.VITE_API_KEY;
+
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'X-API-Key': API_KEY,
+  },
+});
+
+export const analyticsApi = {
+  // Platform Stack Health
+  getPlatformStackHealth: (params = {}) =>
+    apiClient.get('/analytics/platform-stack', { params }),
+
+  getPlatformStatus: () =>
+    apiClient.get('/analytics/platform-stack/status'),
+
+  // Pipeline Metrics
+  getPipelineMetrics: (params = {}) =>
+    apiClient.get('/analytics/pipeline-metrics', { params }),
+
+  getRealTimePipelineMetrics: () =>
+    apiClient.get('/analytics/pipeline-metrics/real-time'),
+
+  // Developer Experience
+  getDeveloperExperience: (params = {}) =>
+    apiClient.get('/analytics/developer-experience', { params }),
+
+  // Throughput
+  getThroughput: (params = {}) =>
+    apiClient.get('/analytics/throughput', { params }),
+
+  // SEQ Metrics
+  getSEQMetrics: (params = {}) =>
+    apiClient.get('/analytics/seq-metrics', { params }),
+
+  // Cost Analytics
+  getCostAnalytics: (params = {}) =>
+    apiClient.get('/analytics/cost-analytics', { params }),
+
+  // Revenue Impact
+  getRevenueImpact: (params = {}) =>
+    apiClient.get('/analytics/revenue-impact', { params }),
+};
+```
+
+**Custom React Hook (`src/hooks/useAnalytics.js`)**:
+```javascript
+import { useState, useEffect } from 'react';
+import { analyticsApi } from '../services/analyticsApi';
+
+export const useAnalytics = (metricType, params = {}, refreshInterval = null) => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      let response;
+
+      switch (metricType) {
+        case 'platform-stack':
+          response = await analyticsApi.getPlatformStackHealth(params);
+          break;
+        case 'pipeline-metrics':
+          response = await analyticsApi.getPipelineMetrics(params);
+          break;
+        case 'developer-experience':
+          response = await analyticsApi.getDeveloperExperience(params);
+          break;
+        case 'throughput':
+          response = await analyticsApi.getThroughput(params);
+          break;
+        case 'seq-metrics':
+          response = await analyticsApi.getSEQMetrics(params);
+          break;
+        case 'cost-analytics':
+          response = await analyticsApi.getCostAnalytics(params);
+          break;
+        case 'revenue-impact':
+          response = await analyticsApi.getRevenueImpact(params);
+          break;
+        default:
+          throw new Error(`Unknown metric type: ${metricType}`);
+      }
+
+      setData(response.data);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+
+    // Auto-refresh if interval specified
+    if (refreshInterval) {
+      const interval = setInterval(fetchData, refreshInterval);
+      return () => clearInterval(interval);
+    }
+  }, [metricType, JSON.stringify(params), refreshInterval]);
+
+  return { data, loading, error, refetch: fetchData };
+};
+```
+
+**Pipeline Metrics Component (`src/components/PipelineMetrics.jsx`)**:
+```jsx
+import React from 'react';
+import { useAnalytics } from '../hooks/useAnalytics';
+
+export const PipelineMetrics = ({ timeRange = '7d', techStack = null }) => {
+  const { data, loading, error } = useAnalytics('pipeline-metrics',
+    { time_range: timeRange, tech_stack: techStack },
+    60000 // Refresh every 60 seconds
+  );
+
+  if (loading) return <div className="loading">Loading pipeline metrics...</div>;
+  if (error) return <div className="error">Error: {error}</div>;
+  if (!data) return null;
+
+  return (
+    <div className="pipeline-metrics">
+      <h2>Pipeline Metrics</h2>
+
+      <div className="metrics-grid">
+        <div className="metric-card">
+          <h3>Pipeline Availability</h3>
+          <div className="metric-value">{data.pipeline_availability.current}%</div>
+          <div className="metric-target">Target: {data.pipeline_availability.target}%</div>
+          <div className="progress-bar">
+            <div
+              className="progress-fill"
+              style={{ width: `${data.pipeline_availability.current}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <h3>Build Success Rate</h3>
+          <div className="metric-value">{data.build_success_rate.current}%</div>
+          <div className="metric-details">
+            {data.build_success_rate.successful_builds} / {data.build_success_rate.total_builds}
+          </div>
+          <div className="progress-bar">
+            <div
+              className="progress-fill success"
+              style={{ width: `${data.build_success_rate.current}%` }}
+            />
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <h3>Deployment Frequency</h3>
+          <div className="metric-value">{data.deployment_frequency.total_deploys_this_week}</div>
+          <div className="metric-sublabel">deploys this week</div>
+          <div className="metric-change">
+            {data.deployment_frequency.change_from_last_week > 0 ? '↑' : '↓'}
+            {Math.abs(data.deployment_frequency.change_from_last_week)} vs last week
+          </div>
+        </div>
+
+        <div className="metric-card">
+          <h3>Cloud Dev Env Health</h3>
+          <div className="metric-value">{data.cloud_dev_env_health.current}%</div>
+          <div className="metric-details">
+            {data.cloud_dev_env_health.active_environments} active environments
+          </div>
+          <div className="progress-bar">
+            <div
+              className="progress-fill"
+              style={{ width: `${data.cloud_dev_env_health.current}%` }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+**Developer Experience Component (`src/components/DeveloperExperience.jsx`)**:
+```jsx
+import React from 'react';
+import { useAnalytics } from '../hooks/useAnalytics';
+
+export const DeveloperExperience = ({ techStack = null }) => {
+  const { data, loading, error } = useAnalytics('developer-experience',
+    { tech_stack: techStack, time_range: '30d' }
+  );
+
+  if (loading) return <div className="loading">Loading DX scores...</div>;
+  if (error) return <div className="error">Error: {error}</div>;
+  if (!data) return null;
+
+  return (
+    <div className="developer-experience">
+      <h2>Developer Experience Scores</h2>
+      <div className="overall-score">
+        Overall DX Score: <span className="score">{data.overall_dx_score}/100</span>
+      </div>
+
+      <div className="dx-grid">
+        {data.tech_stacks.map((stack) => (
+          <div key={stack.technology} className="dx-card">
+            <div className="dx-header">
+              <span className="dx-icon">{stack.icon}</span>
+              <span className="dx-tech">{stack.technology}</span>
+            </div>
+
+            <div className="dx-score-display">
+              <div className="score-value">{stack.dx_score}</div>
+              <div className="score-max">/100</div>
+            </div>
+
+            <div className="dx-progress">
+              <div
+                className="dx-bar"
+                style={{ width: `${stack.dx_score}%` }}
+              />
+            </div>
+
+            <div className="dx-details">
+              <div className="detail-item">
+                <span className="label">Developers:</span>
+                <span className="value">{stack.developer_count}</span>
+              </div>
+
+              <div className="satisfaction-breakdown">
+                <div className="breakdown-item">
+                  Build Time: {stack.satisfaction_breakdown.build_time}%
+                </div>
+                <div className="breakdown-item">
+                  Deployment: {stack.satisfaction_breakdown.deployment_ease}%
+                </div>
+                <div className="breakdown-item">
+                  Platform: {stack.satisfaction_breakdown.platform_usability}%
+                </div>
+                <div className="breakdown-item">
+                  Tooling: {stack.satisfaction_breakdown.tooling_effectiveness}%
+                </div>
+              </div>
+
+              {stack.top_pain_points.length > 0 && (
+                <div className="pain-points">
+                  <strong>Top Pain Points:</strong>
+                  <ul>
+                    {stack.top_pain_points.map((point, idx) => (
+                      <li key={idx}>{point}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+```
+
+**Main App (`src/App.jsx`)**:
+```jsx
+import React, { useState } from 'react';
+import { PipelineMetrics } from './components/PipelineMetrics';
+import { DeveloperExperience } from './components/DeveloperExperience';
+import { PlatformStackHealth } from './components/PlatformStackHealth';
+import { ThroughputChart } from './components/ThroughputChart';
+import { CostAnalytics } from './components/CostAnalytics';
+import { RevenueImpact } from './components/RevenueImpact';
+import './App.css';
+
+function App() {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [timeRange, setTimeRange] = useState('7d');
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1>Platform Analytics Dashboard</h1>
+        <div className="time-range-selector">
+          <select value={timeRange} onChange={(e) => setTimeRange(e.target.value)}>
+            <option value="1h">Last Hour</option>
+            <option value="24h">Last 24 Hours</option>
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+            <option value="90d">Last 90 Days</option>
+          </select>
+        </div>
+      </header>
+
+      <nav className="tab-navigation">
+        <button
+          className={activeTab === 'overview' ? 'active' : ''}
+          onClick={() => setActiveTab('overview')}
+        >
+          Overview
+        </button>
+        <button
+          className={activeTab === 'pipeline' ? 'active' : ''}
+          onClick={() => setActiveTab('pipeline')}
+        >
+          Pipeline Metrics
+        </button>
+        <button
+          className={activeTab === 'dx' ? 'active' : ''}
+          onClick={() => setActiveTab('dx')}
+        >
+          Developer Experience
+        </button>
+        <button
+          className={activeTab === 'cost' ? 'active' : ''}
+          onClick={() => setActiveTab('cost')}
+        >
+          Cost Analytics
+        </button>
+        <button
+          className={activeTab === 'revenue' ? 'active' : ''}
+          onClick={() => setActiveTab('revenue')}
+        >
+          Revenue Impact
+        </button>
+      </nav>
+
+      <main className="app-main">
+        {activeTab === 'overview' && (
+          <>
+            <PlatformStackHealth />
+            <PipelineMetrics timeRange={timeRange} />
+            <ThroughputChart timeRange={timeRange} />
+          </>
+        )}
+        {activeTab === 'pipeline' && <PipelineMetrics timeRange={timeRange} />}
+        {activeTab === 'dx' && <DeveloperExperience />}
+        {activeTab === 'cost' && <CostAnalytics timeRange={timeRange} />}
+        {activeTab === 'revenue' && <RevenueImpact timeRange={timeRange} />}
+      </main>
+    </div>
+  );
+}
+
+export default App;
+```
+
+**Vite Configuration (`vite.config.js`)**:
+```javascript
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+      },
+    },
+  },
+});
+```
+
+**Package Configuration (`package.json`)**:
+```json
+{
+  "name": "platform-analytics-dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.6.2",
+    "recharts": "^2.10.3",
+    "react-query": "^3.39.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.8"
+  }
+}
+```
+
+---
+
+## Integration with Other Frameworks
+
+### Next.js Integration
+
+**API Route (`pages/api/analytics/[...path].js`)**:
+```javascript
+export default async function handler(req, res) {
+  const { path } = req.query;
+  const apiPath = path.join('/');
+
+  const response = await fetch(
+    `${process.env.ANALYTICS_API_URL}/api/v1/analytics/${apiPath}?${new URLSearchParams(req.query)}`,
+    {
+      headers: {
+        'X-API-Key': process.env.ANALYTICS_API_KEY,
+      },
+    }
+  );
+
+  const data = await response.json();
+  res.status(response.status).json(data);
+}
+```
+
+**Server Component (`app/dashboard/page.jsx`)**:
+```jsx
+async function getPipelineMetrics() {
+  const res = await fetch('http://localhost:3000/api/analytics/pipeline-metrics', {
+    cache: 'no-store'
+  });
+  return res.json();
+}
+
+export default async function DashboardPage() {
+  const metrics = await getPipelineMetrics();
+
+  return (
+    <div>
+      <h1>Platform Analytics</h1>
+      <PipelineMetricsDisplay data={metrics} />
+    </div>
+  );
+}
+```
+
+### Vue.js Integration
+
+**Composable (`composables/useAnalytics.js`)**:
+```javascript
+import { ref, onMounted, onUnmounted } from 'vue';
+import axios from 'axios';
+
+export function useAnalytics(metricType, params = {}, refreshInterval = null) {
+  const data = ref(null);
+  const loading = ref(true);
+  const error = ref(null);
+
+  const fetchData = async () => {
+    try {
+      loading.value = true;
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/analytics/${metricType}`,
+        {
+          params,
+          headers: {
+            'X-API-Key': import.meta.env.VITE_API_KEY,
+          },
+        }
+      );
+      data.value = response.data;
+      error.value = null;
+    } catch (err) {
+      error.value = err.message;
+    } finally {
+      loading.value = false;
+    }
+  };
+
+  let interval = null;
+
+  onMounted(() => {
+    fetchData();
+    if (refreshInterval) {
+      interval = setInterval(fetchData, refreshInterval);
+    }
+  });
+
+  onUnmounted(() => {
+    if (interval) clearInterval(interval);
+  });
+
+  return { data, loading, error, refetch: fetchData };
+}
+```
+
+**Component (`components/PipelineMetrics.vue`)**:
+```vue
+<template>
+  <div class="pipeline-metrics">
+    <h2>Pipeline Metrics</h2>
+    <div v-if="loading">Loading...</div>
+    <div v-else-if="error">Error: {{ error }}</div>
+    <div v-else class="metrics-grid">
+      <div class="metric-card">
+        <h3>Pipeline Availability</h3>
+        <div class="metric-value">{{ data.pipeline_availability.current }}%</div>
+      </div>
+      <!-- More metrics... -->
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { useAnalytics } from '../composables/useAnalytics';
+
+const props = defineProps({
+  timeRange: { type: String, default: '7d' }
+});
+
+const { data, loading, error } = useAnalytics(
+  'pipeline-metrics',
+  { time_range: props.timeRange },
+  60000
+);
+</script>
+```
+
+### Angular Integration
+
+**Service (`analytics.service.ts`)**:
+```typescript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AnalyticsService {
+  private apiUrl = environment.analyticsApiUrl;
+  private apiKey = environment.analyticsApiKey;
+
+  constructor(private http: HttpClient) {}
+
+  private getHeaders(): HttpHeaders {
+    return new HttpHeaders({
+      'Content-Type': 'application/json',
+      'X-API-Key': this.apiKey
+    });
+  }
+
+  getPipelineMetrics(params: any = {}): Observable<any> {
+    return this.http.get(`${this.apiUrl}/analytics/pipeline-metrics`, {
+      params,
+      headers: this.getHeaders()
+    });
+  }
+
+  getDeveloperExperience(params: any = {}): Observable<any> {
+    return this.http.get(`${this.apiUrl}/analytics/developer-experience`, {
+      params,
+      headers: this.getHeaders()
+    });
+  }
+
+  // More methods...
+}
+```
+
+**Component (`pipeline-metrics.component.ts`)**:
+```typescript
+import { Component, OnInit, Input } from '@angular/core';
+import { AnalyticsService } from '../services/analytics.service';
+
+@Component({
+  selector: 'app-pipeline-metrics',
+  templateUrl: './pipeline-metrics.component.html',
+  styleUrls: ['./pipeline-metrics.component.css']
+})
+export class PipelineMetricsComponent implements OnInit {
+  @Input() timeRange: string = '7d';
+
+  data: any = null;
+  loading: boolean = true;
+  error: string | null = null;
+
+  constructor(private analyticsService: AnalyticsService) {}
+
+  ngOnInit(): void {
+    this.fetchMetrics();
+    setInterval(() => this.fetchMetrics(), 60000); // Refresh every 60s
+  }
+
+  fetchMetrics(): void {
+    this.loading = true;
+    this.analyticsService.getPipelineMetrics({ time_range: this.timeRange })
+      .subscribe({
+        next: (data) => {
+          this.data = data;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = err.message;
+          this.loading = false;
+        }
+      });
+  }
+}
+```
+
+### Svelte Integration
+
+**Store (`stores/analytics.js`)**:
+```javascript
+import { writable } from 'svelte/store';
+import axios from 'axios';
+
+export function createAnalyticsStore() {
+  const { subscribe, set, update } = writable({
+    data: null,
+    loading: false,
+    error: null
+  });
+
+  return {
+    subscribe,
+    fetchMetrics: async (metricType, params = {}) => {
+      update(state => ({ ...state, loading: true }));
+
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/analytics/${metricType}`,
+          {
+            params,
+            headers: {
+              'X-API-Key': import.meta.env.VITE_API_KEY
+            }
+          }
+        );
+
+        set({ data: response.data, loading: false, error: null });
+      } catch (err) {
+        set({ data: null, loading: false, error: err.message });
+      }
+    }
+  };
+}
+
+export const pipelineMetrics = createAnalyticsStore();
+```
+
+**Component (`PipelineMetrics.svelte`)**:
+```svelte
+<script>
+  import { onMount } from 'svelte';
+  import { pipelineMetrics } from '../stores/analytics';
+
+  export let timeRange = '7d';
+
+  onMount(() => {
+    pipelineMetrics.fetchMetrics('pipeline-metrics', { time_range: timeRange });
+
+    const interval = setInterval(() => {
+      pipelineMetrics.fetchMetrics('pipeline-metrics', { time_range: timeRange });
+    }, 60000);
+
+    return () => clearInterval(interval);
+  });
+</script>
+
+{#if $pipelineMetrics.loading}
+  <div class="loading">Loading...</div>
+{:else if $pipelineMetrics.error}
+  <div class="error">Error: {$pipelineMetrics.error}</div>
+{:else if $pipelineMetrics.data}
+  <div class="pipeline-metrics">
+    <h2>Pipeline Metrics</h2>
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <h3>Pipeline Availability</h3>
+        <div class="metric-value">
+          {$pipelineMetrics.data.pipeline_availability.current}%
+        </div>
+      </div>
+      <!-- More metrics... -->
+    </div>
+  </div>
+{/if}
+```
+
+---
+
+## Deployment Configurations
+
+### Docker Compose (Flask + React)
+
+**`docker-compose.yml`**:
+```yaml
+version: '3.8'
+
+services:
+  # Flask API Backend
+  api:
+    build: ./platform-analytics-api
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - DATABASE_URL=postgresql://user:password@db:5432/platform_analytics
+      - REDIS_URL=redis://redis:6379/0
+      - VALID_API_KEYS=${API_KEYS}
+    depends_on:
+      - db
+      - redis
+    restart: unless-stopped
+
+  # React/Vite Frontend
+  frontend:
+    build: ./platform-analytics-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://api:5000/api/v1
+      - VITE_API_KEY=${API_KEY}
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # PostgreSQL Database
+  db:
+    image: timescale/timescaledb:latest-pg15
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=platform_analytics
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+```
+
+---
+
 **Skill Owner**: Platform Program Management Repository
 **Last Updated**: January 2026
-**Version**: 1.0
+**Version**: 1.1
