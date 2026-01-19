@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capability Roadmap | Platform as a Product</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Fiserv Brand Colors */
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-dark: #333333;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            /* Applied Theme */
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            /* Product Colors */
+            --coder-color: #10b981;
+            --cortex-color: #237cb8;
+            --kratix-color: #8b5cf6;
+
+            /* Phase Colors */
+            --phase-0: #666666;
+            --phase-1: #237cb8;
+            --phase-2: #ff6600;
+            --phase-scale: #10b981;
+
+            --border-subtle: rgba(187, 187, 187, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(35, 124, 184, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1500px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--fiserv-orange);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        h1 .highlight {
+            background: linear-gradient(90deg, var(--cortex-color), var(--kratix-color), var(--coder-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Product Legend */
+        .product-legend {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        .product-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+        }
+
+        .product-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .product-item.coder .product-icon { background: rgba(16, 185, 129, 0.2); }
+        .product-item.cortex .product-icon { background: rgba(35, 124, 184, 0.2); }
+        .product-item.kratix .product-icon { background: rgba(139, 92, 246, 0.2); }
+
+        .product-info {
+            text-align: left;
+        }
+
+        .product-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .product-item.coder .product-name { color: var(--coder-color); }
+        .product-item.cortex .product-name { color: var(--cortex-color); }
+        .product-item.kratix .product-name { color: var(--kratix-color); }
+
+        .product-type {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Roadmap Timeline */
+        .roadmap-section {
+            margin-bottom: 4rem;
+            animation: slideUp 0.6s ease-out 0.3s both;
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        /* Phase Timeline */
+        .phase-timeline {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            position: relative;
+        }
+
+        .phase-timeline::before {
+            content: '';
+            position: absolute;
+            top: 2rem;
+            left: 5%;
+            right: 5%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--phase-0), var(--phase-1), var(--phase-2), var(--phase-scale));
+            border-radius: 2px;
+            z-index: 0;
+        }
+
+        @media (max-width: 1100px) {
+            .phase-timeline {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .phase-timeline::before {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .phase-timeline {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .phase-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 1.5rem;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .phase-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .phase-card.phase-0::before { background: var(--phase-0); }
+        .phase-card.phase-1::before { background: var(--phase-1); }
+        .phase-card.phase-2::before { background: var(--phase-2); }
+        .phase-card.phase-scale::before { background: var(--phase-scale); }
+
+        .phase-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin: -2.5rem auto 1rem;
+            border: 4px solid var(--bg-primary);
+        }
+
+        .phase-card.phase-0 .phase-marker { background: var(--phase-0); }
+        .phase-card.phase-1 .phase-marker { background: var(--phase-1); }
+        .phase-card.phase-2 .phase-marker { background: var(--phase-2); }
+        .phase-card.phase-scale .phase-marker { background: var(--phase-scale); }
+
+        .phase-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-align: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .phase-card.phase-0 .phase-label { color: var(--phase-0); }
+        .phase-card.phase-1 .phase-label { color: var(--phase-1); }
+        .phase-card.phase-2 .phase-label { color: var(--phase-2); }
+        .phase-card.phase-scale .phase-label { color: var(--phase-scale); }
+
+        .phase-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        /* Activity List */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .activity-icon {
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .activity-products {
+            display: flex;
+            gap: 0.25rem;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .product-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .product-dot.coder { background: var(--coder-color); }
+        .product-dot.cortex { background: var(--cortex-color); }
+        .product-dot.kratix { background: var(--kratix-color); }
+
+        /* Scale Section */
+        .scale-section {
+            animation: slideUp 0.6s ease-out 0.4s both;
+        }
+
+        .scale-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .total-apps {
+            text-align: right;
+        }
+
+        .total-number {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--fiserv-blue), var(--fiserv-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .total-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* MC Tiers Grid */
+        .mc-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .mc-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .mc-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mc-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mc-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+
+        .mc-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .mc-card.mc-1::before { background: #ef4444; }
+        .mc-card.mc-2::before { background: var(--fiserv-orange); }
+        .mc-card.mc-3::before { background: #eab308; }
+        .mc-card.mc-4::before { background: var(--coder-color); }
+
+        .mc-tier {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        .mc-card.mc-1 .mc-tier { color: #ef4444; }
+        .mc-card.mc-2 .mc-tier { color: var(--fiserv-orange); }
+        .mc-card.mc-3 .mc-tier { color: #eab308; }
+        .mc-card.mc-4 .mc-tier { color: var(--coder-color); }
+
+        .mc-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .mc-count {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .mc-card.mc-1 .mc-count { color: #ef4444; }
+        .mc-card.mc-2 .mc-count { color: var(--fiserv-orange); }
+        .mc-card.mc-3 .mc-count { color: #eab308; }
+        .mc-card.mc-4 .mc-count { color: var(--coder-color); }
+
+        .mc-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .mc-description {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        /* Product Distribution */
+        .distribution-section {
+            margin-top: 3rem;
+            animation: slideUp 0.6s ease-out 0.5s both;
+        }
+
+        .distribution-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 800px) {
+            .distribution-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .distribution-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .distribution-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+
+        .distribution-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .distribution-card.coder::before { background: var(--coder-color); }
+        .distribution-card.cortex::before { background: var(--cortex-color); }
+        .distribution-card.kratix::before { background: var(--kratix-color); }
+
+        .distribution-card.coder:hover { box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2); }
+        .distribution-card.cortex:hover { box-shadow: 0 20px 60px rgba(35, 124, 184, 0.2); }
+        .distribution-card.kratix:hover { box-shadow: 0 20px 60px rgba(139, 92, 246, 0.2); }
+
+        .distribution-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .distribution-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+        }
+
+        .distribution-card.coder .distribution-icon { background: rgba(16, 185, 129, 0.2); }
+        .distribution-card.cortex .distribution-icon { background: rgba(35, 124, 184, 0.2); }
+        .distribution-card.kratix .distribution-icon { background: rgba(139, 92, 246, 0.2); }
+
+        .distribution-name {
+            font-size: 1.35rem;
+            font-weight: 600;
+        }
+
+        .distribution-card.coder .distribution-name { color: var(--coder-color); }
+        .distribution-card.cortex .distribution-name { color: var(--cortex-color); }
+        .distribution-card.kratix .distribution-name { color: var(--kratix-color); }
+
+        .distribution-type {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .distribution-metric {
+            text-align: center;
+            padding: 1.5rem 0;
+            border-top: 1px solid var(--border-subtle);
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+
+        .distribution-card.coder .metric-number { color: var(--coder-color); }
+        .distribution-card.cortex .metric-number { color: var(--cortex-color); }
+        .distribution-card.kratix .metric-number { color: var(--kratix-color); }
+
+        .metric-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .distribution-features {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .feature-icon {
+            font-size: 1rem;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            margin-top: 3rem;
+            padding: 2rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            animation: slideUp 0.6s ease-out 0.6s both;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .progress-percentage {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--fiserv-orange);
+        }
+
+        .progress-bar-container {
+            height: 24px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--phase-0), var(--phase-1), var(--phase-2), var(--phase-scale));
+            border-radius: 12px;
+            width: 0%;
+            animation: progressGrow 2s ease-out 1s forwards;
+        }
+
+        @keyframes progressGrow {
+            to { width: 12%; }
+        }
+
+        .progress-markers {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            animation: fadeIn 0.8s ease-out 0.7s both;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .phase-card {
+                padding: 1.25rem;
+            }
+
+            .scale-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .total-apps {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">
+                <span>&larr;</span>
+                <span>Back to Critical Path</span>
+            </a>
+        </nav>
+
+        <header>
+            <div class="logo-badge">PLATFORM AS A PRODUCT</div>
+            <h1>Capability <span class="highlight">Roadmap</span></h1>
+            <p class="subtitle">End-to-end execution plan from foundation through enterprise-wide adoption across 1,690 production applications</p>
+        </header>
+
+        <!-- Product Legend -->
+        <div class="product-legend">
+            <div class="product-item coder">
+                <div class="product-icon">💻</div>
+                <div class="product-info">
+                    <div class="product-name">Coder</div>
+                    <div class="product-type">Cloud Development Environment (CDE)</div>
+                </div>
+            </div>
+            <div class="product-item cortex">
+                <div class="product-icon">🧠</div>
+                <div class="product-info">
+                    <div class="product-name">Cortex</div>
+                    <div class="product-type">Internal Developer Platform (IDP)</div>
+                </div>
+            </div>
+            <div class="product-item kratix">
+                <div class="product-icon">⚙️</div>
+                <div class="product-info">
+                    <div class="product-name">Kratix</div>
+                    <div class="product-type">Platform Orchestrator (IDP)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase Timeline -->
+        <div class="roadmap-section">
+            <div class="section-header">
+                <div class="section-label">Execution Phases</div>
+                <h2 class="section-title">Implementation Roadmap</h2>
+            </div>
+
+            <div class="phase-timeline">
+                <!-- Phase 0 -->
+                <div class="phase-card phase-0">
+                    <div class="phase-marker">0</div>
+                    <div class="phase-label">Phase 0</div>
+                    <h3 class="phase-title">Prerequisites</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <span class="activity-icon">📋</span>
+                            <span>Contract & Procurement</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">📡</span>
+                            <span>Axion Relay Setup</span>
+                            <div class="activity-products">
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">🌐</span>
+                            <span>Network Configuration</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">☸️</span>
+                            <span>AKS Cluster Deployment</span>
+                            <div class="activity-products">
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">📜</span>
+                            <span>Kratix Promises (AKS)</span>
+                            <div class="activity-products">
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">💻</span>
+                            <span>Coder Environment Setup</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">🔗</span>
+                            <span>CI/CD/CV Data Ingestion</span>
+                            <div class="activity-products">
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 1 -->
+                <div class="phase-card phase-1">
+                    <div class="phase-marker">1</div>
+                    <div class="phase-label">Phase 1</div>
+                    <h3 class="phase-title">PoV Workshop</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <span class="activity-icon">☕</span>
+                            <span>Demo App (Java/SpringBoot)</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">🚀</span>
+                            <span>One-Touch Assembly</span>
+                            <div class="activity-products">
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">🌱</span>
+                            <span>Greenfield Test Scenario</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">🏭</span>
+                            <span>Brownfield Test Scenario</span>
+                            <div class="activity-products">
+                                <span class="product-dot cortex"></span>
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">📊</span>
+                            <span>Scorecards & CQL Rules</span>
+                            <div class="activity-products">
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">📈</span>
+                            <span>Engineering Intelligence</span>
+                            <div class="activity-products">
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">📋</span>
+                            <span>Leadership Dashboards</span>
+                            <div class="activity-products">
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="phase-card phase-2">
+                    <div class="phase-marker">2</div>
+                    <div class="phase-label">Phase 2</div>
+                    <h3 class="phase-title">Production Pilot</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <span class="activity-icon">☕</span>
+                            <span>Real Java Application</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">☸️</span>
+                            <span>EKS Cluster Deployment</span>
+                            <div class="activity-products">
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">📜</span>
+                            <span>Kratix Promises (EKS)</span>
+                            <div class="activity-products">
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">✅</span>
+                            <span>Complete All Integrations</span>
+                            <div class="activity-products">
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">🎓</span>
+                            <span>Developer Training</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">📖</span>
+                            <span>Documentation & Runbooks</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scale Phase -->
+                <div class="phase-card phase-scale">
+                    <div class="phase-marker">S</div>
+                    <div class="phase-label">Scale</div>
+                    <h3 class="phase-title">Enterprise Rollout</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <span class="activity-icon">🎯</span>
+                            <span>MC-2 Application Coverage</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">🏢</span>
+                            <span>Business Unit Expansion</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">📜</span>
+                            <span>Additional Kratix Promises</span>
+                            <div class="activity-products">
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">👥</span>
+                            <span>Champions Program</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">📈</span>
+                            <span>Enterprise License Agreement</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <span class="activity-icon">🏆</span>
+                            <span>Full Organization Coverage</span>
+                            <div class="activity-products">
+                                <span class="product-dot coder"></span>
+                                <span class="product-dot cortex"></span>
+                                <span class="product-dot kratix"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scale Section -->
+        <div class="scale-section">
+            <div class="scale-header">
+                <div class="section-header" style="margin-bottom: 0;">
+                    <div class="section-label">Enterprise Scale Target</div>
+                    <h2 class="section-title">0-Onboarding @ Scale</h2>
+                </div>
+                <div class="total-apps">
+                    <div class="total-number">1,690</div>
+                    <div class="total-label">Production Applications</div>
+                </div>
+            </div>
+
+            <div class="mc-grid">
+                <div class="mc-card mc-1">
+                    <div class="mc-tier">Cohort 1</div>
+                    <div class="mc-title">Card Services</div>
+                    <div class="mc-count">168</div>
+                    <div class="mc-label">Applications</div>
+                    <div class="mc-count" style="margin-top: 0.5rem;">7</div>
+                    <div class="mc-label">VPs</div>
+                    <div class="mc-count" style="margin-top: 0.5rem;">44</div>
+                    <div class="mc-label">App Owners</div>
+                    <div class="mc-description">Core credit, debit, and prepaid card processing platforms powering Fiserv fintech solutions</div>
+                </div>
+
+                <div class="mc-card mc-2">
+                    <div class="mc-tier">Cohort 2</div>
+                    <div class="mc-title">Issuer Solutions</div>
+                    <div class="mc-count">221</div>
+                    <div class="mc-label">Applications</div>
+                    <div class="mc-count" style="margin-top: 0.5rem;">10</div>
+                    <div class="mc-label">VPs</div>
+                    <div class="mc-count" style="margin-top: 0.5rem;">48</div>
+                    <div class="mc-label">App Owners</div>
+                    <div class="mc-description">Card program management, authorization, and fraud prevention platforms for financial institutions</div>
+                </div>
+
+                <div class="mc-card mc-3" style="opacity: 0.6;">
+                    <div class="mc-tier">Cohort 3</div>
+                    <div class="mc-title" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">🔒 Pending</div>
+                    <div class="mc-count">—</div>
+                    <div class="mc-label">Applications</div>
+                    <div class="mc-count" style="margin-top: 0.5rem;">—</div>
+                    <div class="mc-label">VPs</div>
+                    <div class="mc-count" style="margin-top: 0.5rem;">—</div>
+                    <div class="mc-label">App Owners</div>
+                    <div class="mc-description">Pending additional contractual buy-up before planning</div>
+                </div>
+
+                <div class="mc-card mc-4" style="opacity: 0.6;">
+                    <div class="mc-tier">Cohort 4</div>
+                    <div class="mc-title" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">🔒 Pending</div>
+                    <div class="mc-count">—</div>
+                    <div class="mc-label">Applications</div>
+                    <div class="mc-count" style="margin-top: 0.5rem;">—</div>
+                    <div class="mc-label">VPs</div>
+                    <div class="mc-count" style="margin-top: 0.5rem;">—</div>
+                    <div class="mc-label">App Owners</div>
+                    <div class="mc-description">Pending additional contractual buy-up before planning</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Distribution -->
+        <div class="distribution-section">
+            <div class="section-header">
+                <div class="section-label">Platform Products</div>
+                <h2 class="section-title">Product Coverage at Scale</h2>
+            </div>
+
+            <div class="distribution-grid">
+                <div class="distribution-card coder">
+                    <div class="distribution-header">
+                        <div class="distribution-icon">💻</div>
+                        <div>
+                            <div class="distribution-name">Coder</div>
+                            <div class="distribution-type">Cloud Development Environment</div>
+                        </div>
+                    </div>
+                    <div class="distribution-metric">
+                        <div class="metric-number">~24</div>
+                        <div class="metric-label">Workspace Templates</div>
+                    </div>
+                    <div class="distribution-features">
+                        <div class="feature-item">
+                            <span class="feature-icon">6</span>
+                            <span>Languages (Java, C#, Python, JS, TS, Go)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">6</span>
+                            <span>Build Tools (Maven, NuGet, pip, npm, etc.)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">6</span>
+                            <span>Deployment Types (K8s, VM, Serverless, etc.)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">2</span>
+                            <span>OS Support (Linux, Windows)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="distribution-card cortex">
+                    <div class="distribution-header">
+                        <div class="distribution-icon">🧠</div>
+                        <div>
+                            <div class="distribution-name">Cortex</div>
+                            <div class="distribution-type">Internal Developer Platform</div>
+                        </div>
+                    </div>
+                    <div class="distribution-metric">
+                        <div class="metric-number">~48</div>
+                        <div class="metric-label">Catalog Configurations</div>
+                    </div>
+                    <div class="distribution-features">
+                        <div class="feature-item">
+                            <span class="feature-icon">36</span>
+                            <span>Scaffolds (6 langs × 6 deploy types)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">6</span>
+                            <span>Scorecards (Perf, QA, AppSec, M&O, PaC, Docs)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">6</span>
+                            <span>Deployment Strategies (Blue/Green, Canary, etc.)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">∞</span>
+                            <span>CQL Rules & Automation Workflows</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="distribution-card kratix">
+                    <div class="distribution-header">
+                        <div class="distribution-icon">⚙️</div>
+                        <div>
+                            <div class="distribution-name">Kratix</div>
+                            <div class="distribution-type">Platform Orchestrator</div>
+                        </div>
+                    </div>
+                    <div class="distribution-metric">
+                        <div class="metric-number">~36</div>
+                        <div class="metric-label">Kratix Promises</div>
+                    </div>
+                    <div class="distribution-features">
+                        <div class="feature-item">
+                            <span class="feature-icon">6</span>
+                            <span>Destinations (AKS, EKS, GKE, Private, On-Prem, Hybrid)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">6</span>
+                            <span>Workload Types (Container, K8s, VM, Serverless, etc.)</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">6</span>
+                            <span>Release Strategies per destination</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">∞</span>
+                            <span>Composable Promise Pipelines</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <div class="progress-title">0-Onboarding @ Scale Progress</div>
+                <div class="progress-percentage">Phase 0 → Phase 1</div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar"></div>
+            </div>
+            <div class="progress-markers">
+                <span>Phase 0</span>
+                <span>Phase 1</span>
+                <span>Phase 2</span>
+                <span>Scale</span>
+            </div>
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--fiserv-orange);">389</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Target Apps (Cohort 1 + 2)</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 700; background: linear-gradient(90deg, var(--fiserv-blue), var(--fiserv-orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">~23%</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">of 1,690 Production Apps</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-secondary);">17 VPs</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Executive Stakeholders</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-secondary);">92</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">App Owners</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • CAPABILITY ROADMAP</p>
+        </footer>
+    </div>
+</body>
+</html>

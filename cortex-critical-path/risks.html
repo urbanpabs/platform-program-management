@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risks | Cortex.io IDP Implementation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Fiserv Brand Colors */
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-dark: #333333;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            /* Applied Theme */
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            /* Risk Colors */
+            --risk-high: #ef4444;
+            --risk-medium: #f59e0b;
+            --risk-low: #22c55e;
+
+            --border-subtle: rgba(187, 187, 187, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(239, 68, 68, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--risk-high);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        h1 .highlight {
+            background: linear-gradient(90deg, var(--risk-high), var(--fiserv-orange), var(--risk-low));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-dot.high { background: var(--risk-high); }
+        .legend-dot.medium { background: var(--risk-medium); }
+        .legend-dot.low { background: var(--risk-low); }
+
+        /* Risk Table Container */
+        .risk-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out 0.3s both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Risk Table */
+        .risk-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .risk-table thead {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .risk-table th {
+            padding: 1.25rem 1rem;
+            text-align: left;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .risk-table th:first-child {
+            width: 50px;
+            text-align: center;
+        }
+
+        .risk-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--border-subtle);
+            vertical-align: top;
+        }
+
+        .risk-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .risk-table tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .risk-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Risk Rank */
+        .risk-rank {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0 auto;
+        }
+
+        .risk-rank.critical {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--risk-high);
+        }
+
+        .risk-rank.elevated {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--risk-medium);
+        }
+
+        .risk-rank.moderate {
+            background: rgba(35, 124, 184, 0.2);
+            color: var(--fiserv-blue);
+        }
+
+        /* Risk Name */
+        .risk-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .risk-description {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Risk Badge */
+        .risk-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 100px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .risk-badge.high {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--risk-high);
+        }
+
+        .risk-badge.medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--risk-medium);
+        }
+
+        .risk-badge.low {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--risk-low);
+        }
+
+        .risk-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .risk-badge.high::before { background: var(--risk-high); }
+        .risk-badge.medium::before { background: var(--risk-medium); }
+        .risk-badge.low::before { background: var(--risk-low); }
+
+        /* Owner */
+        .owner-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.75rem;
+            background: rgba(35, 124, 184, 0.15);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--fiserv-blue-light);
+        }
+
+        .owner-tag .owner-icon {
+            font-size: 0.9rem;
+        }
+
+        /* Mitigation */
+        .mitigation-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .mitigation-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .mitigation-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(34, 197, 94, 0.1);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--risk-low);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            animation: fadeIn 0.8s ease-out 0.6s both;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .risk-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .risk-table th,
+            .risk-table td {
+                padding: 1rem 0.75rem;
+            }
+
+            .legend {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">
+                <span>&larr;</span>
+                <span>Back to Critical Path</span>
+            </a>
+        </nav>
+
+        <header>
+            <div class="logo-badge">RISK REGISTER</div>
+            <h1>Program <span class="highlight">Risks</span></h1>
+            <p class="subtitle">Top 10 risks identified for the Cortex.io IDP implementation with likelihood, impact, ownership, and mitigation strategies</p>
+        </header>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot high"></div>
+                <span>High</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot medium"></div>
+                <span>Medium</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot low"></div>
+                <span>Low</span>
+            </div>
+        </div>
+
+        <!-- Risk Table -->
+        <div class="risk-table-container">
+            <table class="risk-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Risk</th>
+                        <th>Likelihood</th>
+                        <th>Impact</th>
+                        <th>Owner</th>
+                        <th>Mitigation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Risk 1 -->
+                    <tr>
+                        <td><div class="risk-rank critical">1</div></td>
+                        <td>
+                            <div class="risk-name">Data Quality & Catalog Accuracy</div>
+                            <div class="risk-description">Incomplete or inaccurate service metadata may result in misleading scorecards and reduced platform trust — garbage in, garbage out</div>
+                        </td>
+                        <td><span class="risk-badge high">High</span></td>
+                        <td><span class="risk-badge high">High</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">🎯</span>
+                                Co-Program Sponsors
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">Establish data governance standards; implement automated data validation; create feedback loops for data correction; leverage Cortex.io vendor support for best practices</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">Data quality scorecard</span>
+                                <span class="mitigation-action">Ownership validation</span>
+                                <span class="mitigation-action">Vendor support engagement</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Risk 2 -->
+                    <tr>
+                        <td><div class="risk-rank critical">2</div></td>
+                        <td>
+                            <div class="risk-name">Team Upskilling & First-Time Implementation</div>
+                            <div class="risk-description">This is everyone's first time building an IDP at this scale — we're all learning together. While this creates uncertainty, it's also what makes this program exciting and transformational</div>
+                        </td>
+                        <td><span class="risk-badge high">High</span></td>
+                        <td><span class="risk-badge high">High</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">🚀</span>
+                                Platform Engineering Team
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">We have the right team with the right attitude to figure this out. Expect headwinds, unknown unknowns, failure, and iteration — that's how we learn. Embrace experimentation, celebrate lessons learned, and maintain psychological safety for the team to take smart risks</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">Learning culture</span>
+                                <span class="mitigation-action">Fail fast, iterate</span>
+                                <span class="mitigation-action">Knowledge sharing</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Risk 3 -->
+                    <tr>
+                        <td><div class="risk-rank critical">3</div></td>
+                        <td>
+                            <div class="risk-name">Developer Adoption Resistance</div>
+                            <div class="risk-description">Engineering teams may resist new platform workflows, preferring existing manual processes or familiar tooling</div>
+                        </td>
+                        <td><span class="risk-badge high">High</span></td>
+                        <td><span class="risk-badge high">High</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">📋</span>
+                                Co-Product Leads
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">Establish champions program; demonstrate clear value through PoV; provide comprehensive training and documentation</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">Champions recruitment</span>
+                                <span class="mitigation-action">Demo sessions</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Risk 4 -->
+                    <tr>
+                        <td><div class="risk-rank critical">4</div></td>
+                        <td>
+                            <div class="risk-name">Platform Tool Configuration — Coder, Cortex & Kratix</div>
+                            <div class="risk-description">Configuring our three core platform products may require extensive tuning: Coder workspaces for dev environments, Cortex.io catalog and scorecards, and Kratix promises for AKS/EKS deployment patterns</div>
+                        </td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td><span class="risk-badge high">High</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">🔧</span>
+                                Co-Engineering Leads
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">Leverage existing templates and promises from each vendor; engage vendor support early for complex scenarios; test extensively in non-prod; build internal expertise incrementally</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">Coder templates</span>
+                                <span class="mitigation-action">Cortex CQL library</span>
+                                <span class="mitigation-action">Kratix promises</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Risk 5 -->
+                    <tr>
+                        <td><div class="risk-rank elevated">5</div></td>
+                        <td>
+                            <div class="risk-name">Network & Connectivity Issues</div>
+                            <div class="risk-description">Firewall rules, proxy configurations, and Axion Relay connectivity may block required data flows between on-prem and SaaS</div>
+                        </td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">🌐</span>
+                                Infrastructure Team
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">Document all required network paths; engage network security team early; validate connectivity in pre-prod environment first</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">Network diagram review</span>
+                                <span class="mitigation-action">Firewall request backlog</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Risk 6 -->
+                    <tr>
+                        <td><div class="risk-rank elevated">6</div></td>
+                        <td>
+                            <div class="risk-name">Contract & MSA Execution Delays</div>
+                            <div class="risk-description">Vendor agreement negotiations, legal reviews, and procurement processes may extend beyond planned timeline</div>
+                        </td>
+                        <td><span class="risk-badge high">High</span></td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">⚖️</span>
+                                Legal & Procurement
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">Engage legal and procurement early; establish parallel workstreams for technical prep during contract negotiations</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">Weekly status calls</span>
+                                <span class="mitigation-action">Escalation path defined</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Risk 7 -->
+                    <tr>
+                        <td><div class="risk-rank elevated">7</div></td>
+                        <td>
+                            <div class="risk-name">Multi-Tool Integration Complexity</div>
+                            <div class="risk-description">Integrating 11+ CI/CD/CV tools (GitHub, GitLab, Fortify, Sonatype, Harness, etc.) may encounter API incompatibilities or data mapping issues</div>
+                        </td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">🔧</span>
+                                Co-Engineering Leads
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">Prioritize critical path integrations; leverage Cortex.io's 200+ pre-built connectors; establish integration testing sandbox</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">Integration priority matrix</span>
+                                <span class="mitigation-action">Vendor support engagement</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Risk 8 -->
+                    <tr>
+                        <td><div class="risk-rank elevated">8</div></td>
+                        <td>
+                            <div class="risk-name">SaaS & AI Review Approval Delays</div>
+                            <div class="risk-description">Enterprise security reviews for SaaS deployment and AI capabilities may require extended evaluation periods</div>
+                        </td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">🔒</span>
+                                Security & Compliance
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">Submit reviews early; provide comprehensive security documentation from Cortex.io; schedule regular check-ins with review teams</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">SOC 2 report shared</span>
+                                <span class="mitigation-action">Security questionnaire</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Risk 9 -->
+                    <tr>
+                        <td><div class="risk-rank moderate">9</div></td>
+                        <td>
+                            <div class="risk-name">Scope Creep During PoV</div>
+                            <div class="risk-description">Stakeholders may request additional features or integrations during proof of value phase, extending timeline</div>
+                        </td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td><span class="risk-badge low">Low</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">📋</span>
+                                Co-Product Leads
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">Define clear PoV success criteria upfront; maintain backlog for future phases; establish change control process</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">Success criteria doc</span>
+                                <span class="mitigation-action">Phase 2 backlog</span>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Risk 10 -->
+                    <tr>
+                        <td><div class="risk-rank moderate">10</div></td>
+                        <td>
+                            <div class="risk-name">Vendor Lock-In & Support Dependency</div>
+                            <div class="risk-description">Deep integration with Cortex, Coder, and Kratix creates dependency on vendor roadmaps, support responsiveness, and pricing — switching costs increase over time</div>
+                        </td>
+                        <td><span class="risk-badge low">Low</span></td>
+                        <td><span class="risk-badge medium">Medium</span></td>
+                        <td>
+                            <span class="owner-tag">
+                                <span class="owner-icon">🏗️</span>
+                                Platform Architecture
+                            </span>
+                        </td>
+                        <td>
+                            <div class="mitigation-text">Design abstraction layers to reduce direct coupling: create an integration bus for CI/CD tools that connects to Axion Relay (enabling Cortex swap); standardize on Kubernetes primitives beneath Kratix promises; use portable dev container specs with Coder. Build internal expertise to reduce support dependency</div>
+                            <div class="mitigation-actions">
+                                <span class="mitigation-action">Integration bus architecture</span>
+                                <span class="mitigation-action">K8s abstraction layer</span>
+                                <span class="mitigation-action">Portable dev containers</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • RISK REGISTER</p>
+        </footer>
+    </div>
+</body>
+</html>

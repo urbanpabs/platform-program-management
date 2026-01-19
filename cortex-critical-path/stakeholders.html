@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stakeholders | Cortex.io IDP Implementation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Fiserv Brand Colors */
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-dark: #333333;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            /* Applied Theme */
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            --enterprise-color: #8b5cf6;
+            --developer-color: #10b981;
+            --platform-color: #237cb8;
+
+            --border-subtle: rgba(187, 187, 187, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(35, 124, 184, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--fiserv-blue);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        h1 .highlight {
+            background: linear-gradient(90deg, var(--enterprise-color), var(--platform-color), var(--developer-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Stakeholder Groups Grid */
+        .stakeholder-groups {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 1100px) {
+            .stakeholder-groups {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Stakeholder Card */
+        .stakeholder-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: slideUp 0.6s ease-out both;
+        }
+
+        .stakeholder-card:nth-child(1) { animation-delay: 0.2s; }
+        .stakeholder-card:nth-child(2) { animation-delay: 0.3s; }
+        .stakeholder-card:nth-child(3) { animation-delay: 0.4s; }
+
+        .stakeholder-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+
+        .stakeholder-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .stakeholder-card.enterprise::before { background: var(--enterprise-color); }
+        .stakeholder-card.developer::before { background: var(--developer-color); }
+        .stakeholder-card.platform::before { background: var(--platform-color); }
+
+        .stakeholder-card.enterprise:hover { box-shadow: 0 20px 60px rgba(139, 92, 246, 0.25); }
+        .stakeholder-card.developer:hover { box-shadow: 0 20px 60px rgba(16, 185, 129, 0.25); }
+        .stakeholder-card.platform:hover { box-shadow: 0 20px 60px rgba(35, 124, 184, 0.25); }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            flex-shrink: 0;
+        }
+
+        .stakeholder-card.enterprise .card-icon { background: rgba(139, 92, 246, 0.2); }
+        .stakeholder-card.developer .card-icon { background: rgba(16, 185, 129, 0.2); }
+        .stakeholder-card.platform .card-icon { background: rgba(35, 124, 184, 0.2); }
+
+        .card-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stakeholder-card.enterprise .card-label { color: var(--enterprise-color); }
+        .stakeholder-card.developer .card-label { color: var(--developer-color); }
+        .stakeholder-card.platform .card-label { color: var(--platform-color); }
+
+        .card-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .card-description {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Role List */
+        .role-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .role-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.85rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .role-item:hover {
+            background: rgba(0, 0, 0, 0.3);
+            transform: translateX(4px);
+        }
+
+        .role-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .stakeholder-card.enterprise .role-icon { background: rgba(139, 92, 246, 0.15); }
+        .stakeholder-card.developer .role-icon { background: rgba(16, 185, 129, 0.15); }
+        .stakeholder-card.platform .role-icon { background: rgba(35, 124, 184, 0.15); }
+
+        .role-info {
+            flex: 1;
+        }
+
+        .role-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .role-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .role-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stakeholder-card.enterprise .role-count {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--enterprise-color);
+        }
+        .stakeholder-card.developer .role-count {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--developer-color);
+        }
+        .stakeholder-card.platform .role-count {
+            background: rgba(35, 124, 184, 0.2);
+            color: var(--platform-color);
+        }
+
+        /* Section Divider */
+        .section-divider {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .section-divider::before,
+        .section-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-subtle);
+        }
+
+        .section-divider-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            animation: fadeIn 0.8s ease-out 0.6s both;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .stakeholder-card {
+                padding: 1.5rem;
+            }
+
+            .role-item {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">
+                <span>&larr;</span>
+                <span>Back to Critical Path</span>
+            </a>
+        </nav>
+
+        <header>
+            <div class="logo-badge">PROGRAM STAKEHOLDERS</div>
+            <h1>Key <span class="highlight">Stakeholders</span></h1>
+            <p class="subtitle">Cross-functional leadership driving the Cortex.io IDP implementation across enterprise, development, and platform engineering</p>
+        </header>
+
+        <!-- Stakeholder Groups -->
+        <div class="stakeholder-groups">
+            <!-- Enterprise Stakeholders -->
+            <div class="stakeholder-card enterprise">
+                <div class="card-header">
+                    <div class="card-icon">🏢</div>
+                    <div>
+                        <div class="card-label">Enterprise</div>
+                        <h2 class="card-title">Enterprise Stakeholders</h2>
+                        <p class="card-description">Strategic oversight & business alignment</p>
+                    </div>
+                </div>
+
+                <div class="role-list">
+                    <div class="role-item">
+                        <div class="role-icon">👔</div>
+                        <div class="role-info">
+                            <div class="role-title">C-Suite Sponsor</div>
+                            <div class="role-desc">Executive visibility & strategic direction</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Michael Torres</div>
+                            <div class="role-desc">SVP, Enterprise Technology</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">📊</div>
+                        <div class="role-info">
+                            <div class="role-title">Business Unit Leader</div>
+                            <div class="role-desc">Business requirements & prioritization</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Sarah Chen</div>
+                            <div class="role-desc">VP, Merchant Solutions Business Unit</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">☁️</div>
+                        <div class="role-info">
+                            <div class="role-title">Cloud</div>
+                            <div class="role-desc">Cloud strategy & infrastructure governance</div>
+                        </div>
+                        <span class="role-count">2</span>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">David Okonkwo</div>
+                            <div class="role-desc">VP, Cloud Infrastructure</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Natalie Simmons</div>
+                            <div class="role-desc">VP, Cloud Security</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">🔒</div>
+                        <div class="role-info">
+                            <div class="role-title">Security & Compliance</div>
+                            <div class="role-desc">Risk assessment & policy alignment</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Jennifer Walsh</div>
+                            <div class="role-desc">VP, Information Security & Compliance</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">⚖️</div>
+                        <div class="role-info">
+                            <div class="role-title">Procurement, Legal & Contracts</div>
+                            <div class="role-desc">Vendor management, MSA negotiation & contract execution</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Robert Kim</div>
+                            <div class="role-desc">Senior Counsel, Technology Contracts</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Platform Engineering Stakeholders -->
+            <div class="stakeholder-card platform">
+                <div class="card-header">
+                    <div class="card-icon">⚙️</div>
+                    <div>
+                        <div class="card-label">Platform Engineering</div>
+                        <h2 class="card-title">Platform Engineering</h2>
+                        <p class="card-description">Implementation & platform delivery</p>
+                    </div>
+                </div>
+
+                <div class="role-list">
+                    <div class="role-item">
+                        <div class="role-icon">👑</div>
+                        <div class="role-info">
+                            <div class="role-title">Executive Sponsor</div>
+                            <div class="role-desc">Strategic vision & executive advocacy</div>
+                        </div>
+                        <span class="role-count">1</span>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Amanda Rodriguez</div>
+                            <div class="role-desc">SVP, Platform Engineering</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">🎯</div>
+                        <div class="role-info">
+                            <div class="role-title">Co-Program Sponsors</div>
+                            <div class="role-desc">Program governance & cross-team coordination</div>
+                        </div>
+                        <span class="role-count">2</span>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Lisa Park</div>
+                            <div class="role-desc">VP, Platform Strategy</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Kevin O'Brien</div>
+                            <div class="role-desc">VP, Developer Enablement</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">🏗️</div>
+                        <div class="role-info">
+                            <div class="role-title">Platform Engineering Leaders</div>
+                            <div class="role-desc">Technical strategy & resource allocation</div>
+                        </div>
+                        <span class="role-count">4</span>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">James Mitchell</div>
+                            <div class="role-desc">VP, Developer Experience</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Priya Sharma</div>
+                            <div class="role-desc">VP, Infrastructure & Cloud</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Marcus Johnson</div>
+                            <div class="role-desc">VP, Platform Services</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Diana Chen</div>
+                            <div class="role-desc">Head of Platform Architecture</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">📋</div>
+                        <div class="role-info">
+                            <div class="role-title">Co-Product Leads</div>
+                            <div class="role-desc">Product roadmap & feature prioritization</div>
+                        </div>
+                        <span class="role-count">2</span>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Rachel Martinez</div>
+                            <div class="role-desc">Platform Product Manager</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Chris Thompson</div>
+                            <div class="role-desc">Platform Product Manager</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">🔧</div>
+                        <div class="role-info">
+                            <div class="role-title">Co-Engineering Leads</div>
+                            <div class="role-desc">Technical implementation & delivery</div>
+                        </div>
+                        <span class="role-count">6</span>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Amir Hassan</div>
+                            <div class="role-desc">Platform Architect</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Nicole Foster</div>
+                            <div class="role-desc">Platform Architect</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Derek Chang</div>
+                            <div class="role-desc">Staff Engineer</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Sofia Ramirez</div>
+                            <div class="role-desc">Staff Engineer</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Tyler Morrison</div>
+                            <div class="role-desc">Staff Engineer</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Jasmine Liu</div>
+                            <div class="role-desc">Staff Engineer</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Developer Teams Stakeholders -->
+            <div class="stakeholder-card developer">
+                <div class="card-header">
+                    <div class="card-icon">👩‍💻</div>
+                    <div>
+                        <div class="card-label">Development</div>
+                        <h2 class="card-title">Developer Teams</h2>
+                        <p class="card-description">End users & adoption champions</p>
+                    </div>
+                </div>
+
+                <div class="role-list">
+                    <div class="role-item">
+                        <div class="role-icon">🎯</div>
+                        <div class="role-info">
+                            <div class="role-title">Engineering Directors</div>
+                            <div class="role-desc">Team alignment & adoption strategy</div>
+                        </div>
+                        <span class="role-count">2</span>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Brian Nguyen</div>
+                            <div class="role-desc">Director, Payments Engineering</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Emily Watson</div>
+                            <div class="role-desc">Director, Core Banking Services</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">👥</div>
+                        <div class="role-info">
+                            <div class="role-title">Engineering Managers</div>
+                            <div class="role-desc">Team enablement & feedback loops</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Carlos Mendez</div>
+                            <div class="role-desc">Engineering Manager, API Platform</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">⭐</div>
+                        <div class="role-info">
+                            <div class="role-title">Tech Leads</div>
+                            <div class="role-desc">Technical guidance & best practices</div>
+                        </div>
+                        <span class="role-count">2</span>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Samantha Lee</div>
+                            <div class="role-desc">Tech Lead, Transaction Services</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Daniel Brooks</div>
+                            <div class="role-desc">Tech Lead, Identity & Access</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">💻</div>
+                        <div class="role-info">
+                            <div class="role-title">Platform Champions</div>
+                            <div class="role-desc">Early adopters & developer advocates</div>
+                        </div>
+                        <span class="role-count">2</span>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Alex Rivera</div>
+                            <div class="role-desc">Senior Software Engineer</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Michelle Patel</div>
+                            <div class="role-desc">Senior Software Engineer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="role-list" style="margin-top: 0.5rem;">
+                    <div class="role-item">
+                        <div class="role-icon">🧪</div>
+                        <div class="role-info">
+                            <div class="role-title">QA Engineers</div>
+                            <div class="role-desc">Quality validation & testing workflows</div>
+                        </div>
+                    </div>
+                    <div class="role-item" style="padding-left: 2rem; background: rgba(0,0,0,0.1);">
+                        <div class="role-info">
+                            <div class="role-title" style="font-size: 0.85rem;">Jordan Ellis</div>
+                            <div class="role-desc">QA Lead, Platform Testing</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • PROGRAM STAKEHOLDERS</p>
+        </footer>
+    </div>
+</body>
+</html>

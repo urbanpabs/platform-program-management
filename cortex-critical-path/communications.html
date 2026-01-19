@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communications | Platform as a Product</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Fiserv Brand Colors */
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-dark: #333333;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            /* Applied Theme */
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            --monthly-color: #237cb8;
+            --milestone-color: #ff6600;
+            --adoption-color: #10b981;
+            --decision-color: #8b5cf6;
+
+            --border-subtle: rgba(187, 187, 187, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(35, 124, 184, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--fiserv-orange);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        h1 .highlight {
+            background: linear-gradient(90deg, var(--monthly-color), var(--milestone-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-dot.monthly { background: var(--monthly-color); }
+        .legend-dot.milestone { background: var(--milestone-color); }
+        .legend-dot.adoption { background: var(--adoption-color); }
+        .legend-dot.decision { background: var(--decision-color); }
+
+        /* Section Title */
+        .section-header {
+            margin-bottom: 2rem;
+            animation: slideUp 0.6s ease-out both;
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        /* Two Column Layout */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (max-width: 1000px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card Styles */
+        .comm-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: slideUp 0.6s ease-out both;
+        }
+
+        .comm-card:nth-child(1) { animation-delay: 0.2s; }
+        .comm-card:nth-child(2) { animation-delay: 0.3s; }
+
+        .comm-card:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .comm-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .comm-card.monthly::before { background: var(--monthly-color); }
+        .comm-card.milestones::before { background: var(--milestone-color); }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .comm-card.monthly .card-icon { background: rgba(35, 124, 184, 0.2); }
+        .comm-card.milestones .card-icon { background: rgba(255, 102, 0, 0.2); }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.25rem;
+        }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        /* Cadence List */
+        .cadence-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .cadence-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .cadence-item:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .cadence-freq {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.35rem 0.6rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .cadence-freq.weekly {
+            background: rgba(35, 124, 184, 0.2);
+            color: var(--monthly-color);
+        }
+
+        .cadence-freq.monthly {
+            background: rgba(35, 124, 184, 0.3);
+            color: var(--fiserv-blue-light);
+        }
+
+        .cadence-freq.quarterly {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--decision-color);
+        }
+
+        .cadence-info {
+            flex: 1;
+        }
+
+        .cadence-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .cadence-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .cadence-audience {
+            font-size: 0.75rem;
+            color: var(--fiserv-orange);
+            margin-top: 0.35rem;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--milestone-color), var(--adoption-color), var(--decision-color));
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 1rem;
+            padding-left: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .timeline-item:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.65rem;
+            top: 1.25rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 3px solid var(--bg-primary);
+        }
+
+        .timeline-item.contract::before { background: var(--milestone-color); }
+        .timeline-item.decision::before { background: var(--decision-color); }
+        .timeline-item.adoption::before { background: var(--adoption-color); }
+        .timeline-item.scale::before { background: var(--fiserv-blue); }
+
+        .timeline-phase {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.35rem;
+        }
+
+        .timeline-item.contract .timeline-phase { color: var(--milestone-color); }
+        .timeline-item.decision .timeline-phase { color: var(--decision-color); }
+        .timeline-item.adoption .timeline-phase { color: var(--adoption-color); }
+        .timeline-item.scale .timeline-phase { color: var(--fiserv-blue); }
+
+        .timeline-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .timeline-comms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .comm-tag {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        /* Adoption Roadmap */
+        .adoption-section {
+            margin-top: 3rem;
+            animation: slideUp 0.6s ease-out 0.4s both;
+        }
+
+        .adoption-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .adoption-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .adoption-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .adoption-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .adoption-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+
+        .adoption-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--adoption-color);
+        }
+
+        .adoption-phase {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--adoption-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .adoption-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .adoption-target {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+
+        .adoption-metric {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--adoption-color);
+        }
+
+        .adoption-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Comms Actions */
+        .comms-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .action-tag {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .action-tag.email {
+            background: rgba(35, 124, 184, 0.2);
+            color: var(--monthly-color);
+        }
+
+        .action-tag.townhall {
+            background: rgba(255, 102, 0, 0.2);
+            color: var(--milestone-color);
+        }
+
+        .action-tag.demo {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--adoption-color);
+        }
+
+        .action-tag.exec {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--decision-color);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            animation: fadeIn 0.8s ease-out 0.6s both;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .comm-card {
+                padding: 1.5rem;
+            }
+
+            .legend {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">
+                <span>&larr;</span>
+                <span>Back to Critical Path</span>
+            </a>
+        </nav>
+
+        <header>
+            <div class="logo-badge">PROGRAM COMMUNICATIONS</div>
+            <h1>Communications <span class="highlight">Plan</span></h1>
+            <p class="subtitle">Strategic communication cadence and key milestone announcements to drive awareness, alignment, and adoption</p>
+        </header>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot monthly"></div>
+                <span>Regular Cadence</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot milestone"></div>
+                <span>Contract Milestones</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot adoption"></div>
+                <span>Adoption Events</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot decision"></div>
+                <span>Key Decisions</span>
+            </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="content-grid">
+            <!-- Monthly Cadence -->
+            <div class="comm-card monthly">
+                <div class="card-header">
+                    <div class="card-icon">📅</div>
+                    <div>
+                        <h2 class="card-title">Regular Communication Cadence</h2>
+                        <p class="card-desc">Ongoing touchpoints to maintain momentum</p>
+                    </div>
+                </div>
+
+                <div class="cadence-list">
+                    <div class="cadence-item">
+                        <span class="cadence-freq weekly">Weekly</span>
+                        <div class="cadence-info">
+                            <div class="cadence-title">Platform Engineering Stand-up</div>
+                            <div class="cadence-desc">Implementation progress, blockers, and upcoming milestones</div>
+                            <div class="cadence-audience">Audience: Platform Engineering Team</div>
+                        </div>
+                    </div>
+
+                    <div class="cadence-item">
+                        <span class="cadence-freq weekly">Bi-Weekly</span>
+                        <div class="cadence-info">
+                            <div class="cadence-title">Stakeholder Sync</div>
+                            <div class="cadence-desc">Cross-functional alignment on progress, risks, and decisions needed</div>
+                            <div class="cadence-audience">Audience: Program Sponsors, Product & Engineering Leads</div>
+                        </div>
+                    </div>
+
+                    <div class="cadence-item">
+                        <span class="cadence-freq monthly">Monthly</span>
+                        <div class="cadence-info">
+                            <div class="cadence-title">Executive Steering Committee</div>
+                            <div class="cadence-desc">Strategic review, budget updates, and executive decision points</div>
+                            <div class="cadence-audience">Audience: Executive Sponsor, VPs, C-Suite</div>
+                        </div>
+                    </div>
+
+                    <div class="cadence-item">
+                        <span class="cadence-freq monthly">Monthly</span>
+                        <div class="cadence-info">
+                            <div class="cadence-title">Platform Newsletter</div>
+                            <div class="cadence-desc">Feature highlights, success stories, tips & tricks, upcoming changes</div>
+                            <div class="cadence-audience">Audience: All Engineering Teams</div>
+                        </div>
+                    </div>
+
+                    <div class="cadence-item">
+                        <span class="cadence-freq monthly">Monthly</span>
+                        <div class="cadence-info">
+                            <div class="cadence-title">Platform Capability Demos</div>
+                            <div class="cadence-desc">Live demonstrations of new developer-consumable capabilities: workspace templates, scaffolds, scorecards, deployment workflows, and initiative tracking (Marshall Plan, AppSec SCM Policy)</div>
+                            <div class="cadence-audience">Audience: Application Developers, App Owners, Engineering Managers</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Milestones -->
+            <div class="comm-card milestones">
+                <div class="card-header">
+                    <div class="card-icon">🎯</div>
+                    <div>
+                        <h2 class="card-title">Key Milestone Communications</h2>
+                        <p class="card-desc">Critical events requiring targeted announcements</p>
+                    </div>
+                </div>
+
+                <div class="timeline">
+                    <div class="timeline-item contract">
+                        <div class="timeline-phase">Contract Milestone</div>
+                        <div class="timeline-title">Contract Executed</div>
+                        <div class="timeline-desc">Official announcement of Cortex.io partnership and program kick-off</div>
+                        <div class="timeline-comms">
+                            <span class="comm-tag">Executive Email</span>
+                            <span class="comm-tag">Slack Announcement</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item adoption">
+                        <div class="timeline-phase">Adoption Event</div>
+                        <div class="timeline-title">PoV Workshop Complete</div>
+                        <div class="timeline-desc">Share results, lessons learned, and readiness for pilot phase</div>
+                        <div class="timeline-comms">
+                            <span class="comm-tag">Demo Day</span>
+                            <span class="comm-tag">Case Study</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item decision">
+                        <div class="timeline-phase">Key Decision</div>
+                        <div class="timeline-title">Pilot Success / License Expansion</div>
+                        <div class="timeline-desc">Decision point to expand licenses based on pilot outcomes and demand</div>
+                        <div class="timeline-comms">
+                            <span class="comm-tag">Exec Briefing</span>
+                            <span class="comm-tag">Business Case</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item adoption">
+                        <div class="timeline-phase">Adoption Event</div>
+                        <div class="timeline-title">Early Adopter Onboarding</div>
+                        <div class="timeline-desc">First wave of app owners onboarded to production platform</div>
+                        <div class="timeline-comms">
+                            <span class="comm-tag">Training Sessions</span>
+                            <span class="comm-tag">Office Hours</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item scale">
+                        <div class="timeline-phase">Scale Event</div>
+                        <div class="timeline-title">MC-2 Coverage Milestone</div>
+                        <div class="timeline-desc">Platform adoption reaches mission-critical tier 2 applications</div>
+                        <div class="timeline-comms">
+                            <span class="comm-tag">Success Metrics</span>
+                            <span class="comm-tag">Town Hall</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item decision">
+                        <div class="timeline-phase">Key Decision</div>
+                        <div class="timeline-title">Enterprise License Agreement</div>
+                        <div class="timeline-desc">Transition to enterprise-wide licensing as adoption scales</div>
+                        <div class="timeline-comms">
+                            <span class="comm-tag">ROI Report</span>
+                            <span class="comm-tag">Exec Approval</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item scale">
+                        <div class="timeline-phase">Scale Event</div>
+                        <div class="timeline-title">Business Unit Expansion</div>
+                        <div class="timeline-desc">Rollout to additional business units beyond initial scope</div>
+                        <div class="timeline-comms">
+                            <span class="comm-tag">BU Kickoffs</span>
+                            <span class="comm-tag">Champions Program</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adoption Roadmap -->
+        <div class="adoption-section">
+            <div class="section-header">
+                <div class="section-label">Adoption Scaling</div>
+                <h2 class="section-title">Platform Adoption Milestones</h2>
+            </div>
+
+            <div class="adoption-grid">
+                <div class="adoption-card">
+                    <div class="adoption-phase">Phase 1</div>
+                    <div class="adoption-title">PoV Workshop</div>
+                    <div class="adoption-target">Demo Applications</div>
+                    <div class="adoption-metric">1-5</div>
+                    <div class="adoption-label">Services</div>
+                    <div class="comms-actions">
+                        <span class="action-tag demo">🎬 Demo Day</span>
+                        <span class="action-tag email">📧 Team Update</span>
+                    </div>
+                </div>
+
+                <div class="adoption-card">
+                    <div class="adoption-phase">Phase 2</div>
+                    <div class="adoption-title">Pilot</div>
+                    <div class="adoption-target">Real Java App on EKS</div>
+                    <div class="adoption-metric">1</div>
+                    <div class="adoption-label">Production App</div>
+                    <div class="comms-actions">
+                        <span class="action-tag demo">🎓 Training</span>
+                        <span class="action-tag email">📧 Newsletter</span>
+                    </div>
+                </div>
+
+                <div class="adoption-card">
+                    <div class="adoption-phase">Cohort 1</div>
+                    <div class="adoption-title">Card Services</div>
+                    <div class="adoption-target">7 VPs • 44 App Owners</div>
+                    <div class="adoption-metric">168</div>
+                    <div class="adoption-label">Applications</div>
+                    <div class="comms-actions">
+                        <span class="action-tag demo">🎬 Capability Demos</span>
+                        <span class="action-tag exec">📊 Exec Review</span>
+                    </div>
+                </div>
+
+                <div class="adoption-card">
+                    <div class="adoption-phase">Cohort 2</div>
+                    <div class="adoption-title">Issuer Solutions</div>
+                    <div class="adoption-target">10 VPs • 48 App Owners</div>
+                    <div class="adoption-metric">221</div>
+                    <div class="adoption-label">Applications</div>
+                    <div class="comms-actions">
+                        <span class="action-tag email">📰 Newsletter</span>
+                        <span class="action-tag exec">📈 ROI Report</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Summary Stats -->
+            <div style="margin-top: 1.5rem; padding: 1.25rem; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--milestone-color);">389</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Target Apps (Cohort 1 + 2)</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 700; background: linear-gradient(90deg, var(--monthly-color), var(--milestone-color)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">~23%</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">of 1,690 Production Apps</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-secondary);">17</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">VPs (Executive Stakeholders)</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-secondary);">92</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">App Owners</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • COMMUNICATIONS PLAN</p>
+        </footer>
+    </div>
+</body>
+</html>

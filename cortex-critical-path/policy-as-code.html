@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy-as-Code | Platform as a Product</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            --cat-automation: #3b82f6;
+            --cat-behavior: #10b981;
+            --cat-behavior-enabled: #8b5cf6;
+            --cat-core: #f59e0b;
+
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            --border-subtle: rgba(187, 187, 187, 0.12);
+            --critical-path: linear-gradient(90deg, #666666, #237cb8, #ff6600);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(35, 124, 184, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--cat-behavior-enabled);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+        }
+
+        h1 span {
+            background: var(--critical-path);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 1rem;
+        }
+
+        .reference-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--fiserv-blue);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .reference-link:hover {
+            background: var(--bg-card-hover);
+            color: var(--fiserv-orange);
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-dot.automation { background: var(--cat-automation); }
+        .legend-dot.behavior { background: var(--cat-behavior); }
+        .legend-dot.behavior-enabled { background: var(--cat-behavior-enabled); }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item { text-align: center; }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-value.automation { color: var(--cat-automation); }
+        .stat-value.behavior { color: var(--cat-behavior); }
+        .stat-value.behavior-enabled { color: var(--cat-behavior-enabled); }
+        .stat-value.total { background: var(--critical-path); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .category-section { margin-bottom: 3rem; }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-subtle);
+        }
+
+        .category-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .category-icon.automation { background: rgba(59, 130, 246, 0.2); }
+        .category-icon.behavior { background: rgba(16, 185, 129, 0.2); }
+        .category-icon.behavior-enabled { background: rgba(139, 92, 246, 0.2); }
+
+        .category-title { font-size: 1.25rem; font-weight: 600; }
+
+        .category-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            margin-left: auto;
+        }
+
+        .category-count.automation { background: rgba(59, 130, 246, 0.2); color: var(--cat-automation); }
+        .category-count.behavior { background: rgba(16, 185, 129, 0.2); color: var(--cat-behavior); }
+        .category-count.behavior-enabled { background: rgba(139, 92, 246, 0.2); color: var(--cat-behavior-enabled); }
+
+        .practice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .practice-tile {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .practice-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .practice-tile.automation::before { background: var(--cat-automation); }
+        .practice-tile.behavior::before { background: var(--cat-behavior); }
+        .practice-tile.behavior-enabled::before { background: var(--cat-behavior-enabled); }
+
+        .practice-tile:hover {
+            transform: translateY(-2px);
+            background: var(--bg-card-hover);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .practice-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+            padding-right: 2rem;
+        }
+
+        .practice-id {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .practice-check {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            max-width: 900px;
+            width: 100%;
+            margin: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .modal-meta {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .modal-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            text-transform: uppercase;
+        }
+
+        .modal-badge.type { background: rgba(102, 102, 102, 0.3); color: var(--text-secondary); }
+        .modal-badge.automation { background: rgba(59, 130, 246, 0.2); color: var(--cat-automation); }
+        .modal-badge.behavior { background: rgba(16, 185, 129, 0.2); color: var(--cat-behavior); }
+        .modal-badge.behavior-enabled-automation { background: rgba(139, 92, 246, 0.2); color: var(--cat-behavior-enabled); }
+        .modal-badge.maturity { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+
+        .modal-close {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .modal-body { padding: 2rem; }
+
+        .modal-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border-left: 4px solid var(--fiserv-blue);
+        }
+
+        .modal-section { margin-bottom: 2rem; }
+
+        .modal-section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .requirements-list, .benefits-list {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .requirement-item, .benefit-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .requirement-check {
+            color: #10b981;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .benefit-icon {
+            color: var(--fiserv-orange);
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .requirement-text, .benefit-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        .rego-container {
+            background: #0d1117;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .rego-header {
+            padding: 0.75rem 1rem;
+            background: rgba(139, 92, 246, 0.1);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rego-filename {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--cat-behavior-enabled);
+        }
+
+        .rego-copy {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .rego-copy:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+        }
+
+        .rego-body {
+            padding: 1rem;
+            overflow-x: auto;
+        }
+
+        .rego-body pre {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: #c9d1d9;
+            margin: 0;
+            white-space: pre;
+        }
+
+        .rego-body .comment { color: #8b949e; }
+        .rego-body .keyword { color: #ff7b72; }
+        .rego-body .string { color: #a5d6ff; }
+        .rego-body .function { color: #d2a8ff; }
+        .rego-body .boolean { color: #79c0ff; }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 2rem 1rem; }
+            .stats-bar { flex-direction: column; gap: 1.5rem; }
+            .practice-grid { grid-template-columns: 1fr; }
+            .modal-body { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">
+                <span>&larr;</span>
+                <span>Back to Critical Path</span>
+            </a>
+        </nav>
+
+        <header>
+            <div class="logo-badge">CD MATURITY PRACTICES</div>
+            <h1>Policy-as-Code <span>Practice Catalog</span></h1>
+            <p class="subtitle">Continuous Delivery maturity practices adopted for the Cortex.io IDP implementation. Click any practice to view requirements and policy configuration.</p>
+            <a href="https://practices.minimumcd.org/?adopted=YXBpLW1hbmFnZW1lbnQsYXBwbGljYXRpb24tcGlwZWxpbmUsYXJ0aWZhY3QtcmVwb3NpdG9yeSxhdGRkLGF1dG9tYXRlZC1hcnRpZmFjdC12ZXJzaW9uaW5nLGF1dG9tYXRlZC1kYi1jaGFuZ2VzLGF1dG9tYXRlZC1lbnZpcm9ubWVudC1wcm92aXNpb25pbmcsYXV0b21hdGVkLXRlc3RpbmcsYmVoYXZpb3ItZHJpdmVuLWRldmVsb3BtZW50LGJ1aWxkLWF1dG9tYXRpb24sYnVpbGQtb24tY29tbWl0LGNvbXBsaWFuY2UtdGVzdGluZyxjb21wb25lbnQtb3duZXJzaGlwLGNvbmZpZ3VyYXRpb24tbWFuYWdlbWVudCxjb250aW51b3VzLWludGVncmF0aW9uLGNvbnRpbnVvdXMtdGVzdGluZyxjb250cmFjdC10ZXN0aW5nLGNyb3NzLWZ1bmN0aW9uYWwtcHJvZHVjdC10ZWFtLGN5Y2xlLXRpbWUtdHJhY2tpbmcsZGF0YWJhc2UtbWlncmF0aW9uLXN0cmF0ZWd5LGRlcGVuZGVuY3ktbWFuYWdlbWVudCxkZXBsb3ltZW50LWF1dG9tYXRpb24sZGV0ZXJtaW5pc3RpYy10ZXN0cyxkZXZlbG9wZXItZHJpdmVuLXN1cHBvcnQsZXBoZW1lcmFsLXRlc3QtZW52aXJvbm1lbnRzLGV2b2x1dGlvbmFyeS1jb2RpbmcsZXZvbHV0aW9uYXJ5LWRhdGFiYXNlLGV4cGxvcmF0b3J5LXRlc3RpbmcsZmVhdHVyZS1mbGFncyxmdW5jdGlvbmFsLXRlc3RpbmcsaW1tdXRhYmxlLWFydGlmYWN0LGluZnJhc3RydWN0dXJlLWF1dG9tYXRpb24saW50ZWdyYXRpb24tdGVzdGluZyxsb2dnaW5nLWluZnJhc3RydWN0dXJlLG1vZHVsYXItc3lzdGVtLG1vbml0b3JpbmctYW5kLWFsZXJ0aW5nLG9uLWRlbWFuZC1yb2xsYmFjayxwZXJmb3JtYW5jZS10ZXN0aW5nLHBpcGVsaW5lLXZpc2liaWxpdHkscHJpb3JpdGl6ZWQtZmVhdHVyZXMscHJvZHVjdC1nb2FscyxxdWFsaXR5LWdhdGVzLHJlc2lsaWVuY2UtdGVzdGluZyxzZWNyZXQtbWFuYWdlbWVudCxzZWN1cml0eS10ZXN0aW5nLHNtb2tlLXRlc3Rpbmcsc3RhdGljLWFuYWx5c2lzLHN0b3AtdGhlLWxpbmUsdGVsZW1ldHJ5LW9ic2VydmFiaWxpdHksdGVzdC1kYXRhLW1hbmFnZW1lbnQsdGVzdC1lbnZpcm9ubWVudCx0cnVuay1iYXNlZC1kZXZlbG9wbWVudCx1bmlmaWVkLXRlYW0tYmFja2xvZyx1c2FiaWxpdHktdGVzdGluZyx2ZXJzaW9uLWNvbnRyb2wsdmVyc2lvbmVkLWRhdGFiYXNl" target="_blank" class="reference-link">
+                <span>View Interactive Explorer</span>
+                <span>&nearr;</span>
+            </a>
+        </header>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot automation"></div>
+                <span>Automation</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot behavior"></div>
+                <span>Behavior</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot behavior-enabled"></div>
+                <span>Behavior-Enabled Automation</span>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value total">56</div>
+                <div class="stat-label">Total Practices</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value automation">22</div>
+                <div class="stat-label">Automation</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value behavior">23</div>
+                <div class="stat-label">Behavior</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value behavior-enabled">11</div>
+                <div class="stat-label">Behavior-Enabled</div>
+            </div>
+        </div>
+
+        <div id="practicesContainer">
+            <!-- Practices will be loaded dynamically -->
+            <p style="text-align: center; color: var(--text-muted);">Loading practices...</p>
+        </div>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • POLICY-AS-CODE</p>
+        </footer>
+    </div>
+
+    <!-- Modal -->
+    <div id="practiceModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h2 class="modal-title" id="modalTitle">Practice Name</h2>
+                    <div class="modal-meta" id="modalMeta"></div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description" id="modalDescription"></p>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">&#9745; Requirements</div>
+                    <div class="requirements-list" id="modalRequirements"></div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">&#9733; Benefits</div>
+                    <div class="benefits-list" id="modalBenefits"></div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">&#128220; OPA/Rego Policy Sample</div>
+                    <div class="rego-container">
+                        <div class="rego-header">
+                            <span class="rego-filename" id="regoFilename">policy.rego</span>
+                            <button class="rego-copy" onclick="copyRego()">Copy</button>
+                        </div>
+                        <div class="rego-body">
+                            <pre id="regoCode"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Practices data embedded to avoid CORS issues when opening file directly
+        const practicesData = {
+            "practices": [
+                {"id":"api-management","name":"API Management","description":"Governance and lifecycle management of APIs including versioning, documentation, security, and monitoring.","type":"practice","category":"automation","maturityLevel":1,"requirements":["API analytics and monitoring","API documentation tools (OpenAPI, Swagger)","API gateway infrastructure","Security controls (authentication, authorization)","Versioning strategy (semantic versioning)"],"benefits":["Better API discoverability and documentation","Consistent API experience for consumers","Controlled access and security","Usage analytics and insights","Version management and deprecation"]},
+                {"id":"application-pipeline","name":"Application Pipeline","description":"The automated pipeline is the only path to production, validating every change through build, test, and deployment stages.","type":"practice","category":"behavior-enabled-automation","maturityLevel":1,"requirements":["Automated build process","Automated deployment capability","Automated testing stages","Determines production readiness","Only path to production","Visible to entire team"],"benefits":["Automated quality gates","Consistent deployment process","Fast feedback on changes","Reduced human error"]},
+                {"id":"artifact-repository","name":"Artifact Repository","description":"Central storage for versioned build artifacts, ensuring traceability and enabling artifact promotion across environments.","type":"practice","category":"automation","maturityLevel":0,"requirements":["Access controls","Fast retrieval","Retention policies","Secure storage","Version all artifacts"],"benefits":["Artifact traceability","Audit trail","Consistent deployments","Easy rollback"]},
+                {"id":"atdd","name":"Acceptance Test-Driven Development (ATDD)","description":"Development approach where acceptance tests are written before implementation, derived from BDD scenarios, ensuring the system meets business requirements and user expectations.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["Acceptance tests written before implementation","Automated acceptance test execution","BDD scenarios to guide acceptance test creation","Clear definition of done based on passing acceptance tests","Fast feedback from acceptance test runs","Tests focus on user-visible behavior, not implementation details"],"benefits":["Confidence in refactoring with comprehensive acceptance coverage","Early validation of architectural decisions","Executable specification of system behavior","Implementation guided by concrete acceptance criteria","Prevention of scope creep through clear boundaries","Reduced manual testing effort","Verification that features meet business requirements"]},
+                {"id":"automated-artifact-versioning","name":"Automated Artifact Versioning","description":"Automatically generating and managing semantic version numbers for build artifacts based on commits.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Artifact repository with version support","Automated version increment from CI","Changelog generation from commits","Version tagging in VCS (git tags)","Versioning scheme (semantic versioning)"],"benefits":["Automated release notes","Better dependency management","Clear artifact tracking and traceability","Reproducible builds at any point","Simplified rollbacks to known versions"]},
+                {"id":"automated-db-changes","name":"Automated DB Changes","description":"Database schema and data changes are automated and applied through CI/CD pipeline with version control.","type":"practice","category":"behavior-enabled-automation","maturityLevel":1,"requirements":["Automated testing of migrations","Database change validation in pipeline","Database migration tools (Flyway, Liquibase)","Rollback procedures for each migration","Version control for schema changes"],"benefits":["Better audit trail of changes","Consistent database state across environments","Faster deployments and releases","Reduced deployment errors and risks","Simplified database versioning"]},
+                {"id":"automated-environment-provisioning","name":"Automated Environment Provisioning","description":"Infrastructure and environments created automatically through code (IaC) on-demand.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Automated testing of infrastructure","Cloud provider APIs and automation","Configuration management (Ansible, Chef)","Environment templates and blueprints","Infrastructure as Code tools (Terraform, Pulumi)"],"benefits":["Better disaster recovery capability","Consistent environments across SDLC","Cost optimization through automation","Faster environment provisioning","Reduced configuration drift issues"]},
+                {"id":"automated-testing","name":"Automated Testing","description":"Comprehensive automated test suite that runs on every code change to ensure quality and catch regressions.","type":"practice","category":"automation","maturityLevel":0,"requirements":["Fast feedback (< 10 minutes for unit tests)","Flaky tests fixed immediately","High code coverage","Multiple test levels (unit, integration, acceptance)","Run on every commit","Tests must pass before merge"],"benefits":["Early defect detection","Living documentation","Reduced manual testing effort","Refactoring confidence"]},
+                {"id":"behavior-driven-development","name":"Behavior-Driven Development (BDD)","description":"Define software behavior using a structured, human-readable DSL that serves as executable specifications and living documentation.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["Features reviewed with stakeholders","Features serve as living documentation","Include explicit data values in scenarios","Scenarios are declarative (what, not how)","Scenarios are defined in a collaborative process with product, quality, and development points of view","Scenarios focus on behavior and interactions, not implementation","Scenarios relate to a single feature","Use specific, testable acceptance criteria"],"benefits":["Clear definition of done","Enables collaboration","Foundation for deterministic tests","Living documentation stays current","Reduces ambiguity in requirements","Shared understanding between technical and business teams","Testable acceptance criteria"]},
+                {"id":"build-automation","name":"Build Automation","description":"Comprehensive automated build process in CI/CD pipeline that compiles, packages, tests, and validates code without manual intervention.","type":"practice","category":"automation","maturityLevel":1,"requirements":["CI/CD build pipeline configuration","Fail fast on errors","Fail fast on errors with clear messages","Fast execution","Fast execution with caching strategies","One-command build from any commit","Parallel build stages where possible","Repeatable builds","Repeatable builds with same inputs","Runs in CI environment"],"benefits":["Build reproducibility and traceability","Consistency across all builds","Consistency across builds","Easy onboarding","Easy onboarding for new team members","Fast feedback","Fast feedback to developers","Reduced human error","Reduced human error in build process"]},
+                {"id":"build-on-commit","name":"Build on Commit","description":"Every code commit triggers an automated build and test cycle to provide immediate feedback.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["CI trigger configuration","Fast build times (< 10 minutes)","Notification system for build status","Protected trunk branch requiring passing builds","VCS webhooks for triggering builds"],"benefits":["Enforces quality gates automatically","Immediate feedback on code changes","Maintains always-green build status","Prevents broken builds in trunk","Reduces integration issues"]},
+                {"id":"compliance-testing","name":"Compliance Testing","description":"Automated testing and validation to ensure compliance with regulatory requirements, industry standards, and organizational policies.","type":"practice","category":"behavior","maturityLevel":2,"requirements":["Automated compliance checking tools","Automated policy enforcement","Compliance test suite in CI/CD pipeline","Documentation of compliance requirements","Regular compliance audits"],"benefits":["Audit trail for regulatory requirements","Continuous compliance validation","Early detection of compliance violations","Lower compliance risk","Reduced audit preparation time"]},
+                {"id":"component-ownership","name":"Component Ownership","description":"Clear accountability for each component with a designated team responsible for its entire lifecycle.","type":"practice","category":"behavior","maturityLevel":3,"requirements":["Clear team responsibilities and boundaries","Communication channels for each component","On-call rotation for owned components","Ownership registry and documentation","Team structure aligned with components"],"benefits":["Better code and system quality","Clear accountability and ownership","Faster decision making on changes","Reduced cross-team dependencies and handoffs","Stronger team autonomy"]},
+                {"id":"configuration-management","name":"Application Configuration Management","description":"Manage application configuration separately from code, versioned and deployed alongside artifacts.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Auditable changes","Configuration versioned in source control","Deployed with artifact","Environment-specific values externalized","No secrets in source code"],"benefits":["Easy configuration rollback","Environment parity","Secure secret management","Traceable configuration changes"]},
+                {"id":"continuous-delivery","name":"Continuous Delivery","description":"Continuous delivery improves both delivery performance and quality, and also helps improve culture and reduce burnout and deployment pain.","type":"root","category":"core","maturityLevel":3,"requirements":["Application pipeline is the only path to production","Create immutable artifacts","Deploy application configuration with artifact","Enable on-demand rollback","Maintain production-like test environment","Pipeline determines production readiness","Stop feature work when pipeline fails","Use Continuous Integration"],"benefits":["Better team culture","Higher quality releases","Improved delivery performance","Less deployment pain","Reduced burnout"]},
+                {"id":"continuous-integration","name":"Continuous Integration","description":"Integrate code changes frequently to detect integration issues early and maintain a working mainline.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["Automated testing before merging to trunk","Automatically test work with other work on merge","Ensure new work doesn't break existing work","Integrate work to trunk at least daily","Stop feature work when build fails","Use Trunk-based Development"],"benefits":["Always-releasable codebase","Early detection of integration issues","Faster feedback cycles","Reduced merge conflicts"]},
+                {"id":"continuous-testing","name":"Continuous Testing","description":"Testing throughout the development lifecycle with automated feedback at every stage of the pipeline plus continuous exploration and validation of look and feel.","type":"practice","category":"behavior-enabled-automation","maturityLevel":1,"requirements":["CI/CD pipeline integration","Multiple test levels (unit, integration, E2E)","Test automation framework and tooling","Test data management strategy","Test environment infrastructure"],"benefits":["Early defect detection in pipeline","Faster feedback cycles for developers","Higher confidence in changes and releases","Living documentation of system behavior","Reduced manual testing effort"]},
+                {"id":"contract-testing","name":"Contract Testing","description":"Testing API contracts between services to ensure compatibility and prevent breaking changes.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["Contract broker for sharing","Contract testing tools (static mocks, virtual services, etc.)","Contract versioning strategy","Machine readable service contract definitions (OpenAPI, RAML, GraphQL, AsyncApi, etc.)"],"benefits":["Better API stability and reliability","Enables independent service deployment","Faster feedback on incompatibilities","Prevents breaking API changes","Reduced integration testing needs"]},
+                {"id":"cross-functional-product-team","name":"Cross-Functional Product Team","description":"Highly cohesive, autonomous teams with all skills necessary to deliver business capabilities end-to-end, owning a subset of the product and working together continuously.","type":"practice","category":"behavior","maturityLevel":3,"requirements":["Clear boundaries of team responsibility and autonomy","Stable team membership over time","Team has authority to make decisions within their scope","Team has direct access to stakeholders and users","Team includes all necessary roles: developers, testers, UX, product owner","Team operates what they build in production","Team owns a clear subset of business capabilities or product features","Team works together in the same space (physical or virtual)"],"benefits":["Better alignment between business needs and technical implementation","Better collaboration and shared understanding","Faster delivery through reduced handoffs and dependencies","Higher team morale and engagement","Improved quality through collective ownership","More effective feedback loops with stakeholders","Reduced communication overhead","Stronger accountability and ownership of outcomes"]},
+                {"id":"cycle-time-tracking","name":"Cycle Time Tracking","description":"Measurement and monitoring of development cycle metrics including lead time, deployment frequency, and defect arrival rates to identify bottlenecks and drive continuous improvement.","type":"practice","category":"behavior","maturityLevel":2,"requirements":["Automated collection of cycle time data from VCS and CI/CD pipeline","Change failure rate measurement","Defect arrival rate monitoring","Deployment frequency tracking","Lead time measurement (commit to production)","Mean time to recovery (MTTR) tracking","Visualization dashboards for team review"],"benefits":["Enables evidence-based decision making","Highlights quality trends via defect rates","Identifies bottlenecks in delivery process","Provides data-driven insights for improvement","Tracks progress toward CD maturity"]},
+                {"id":"database-migration-strategy","name":"Database Migration Strategy","description":"Approach to database changes that supports continuous delivery and enables safe rollbacks.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["Automated migrations","Backward compatible changes","Rollback plan for each change","Testable migrations","Versioned with code"],"benefits":["Reduced deployment risk","Rollback capability","Safe database deployments","Schema version control"]},
+                {"id":"dependency-management","name":"Dependency Management","description":"Systematic approach to managing third-party libraries and dependencies.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Declare all dependencies","License compliance","Pin versions","Regular updates","Vulnerability scanning"],"benefits":["Easy upgrades","Reduced conflicts","Reproducible builds","Security awareness"]},
+                {"id":"deployment-automation","name":"Deployment Automation","description":"Automated deployment process that can push artifacts to any environment without manual steps.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Automated verification","Environment-agnostic scripts","Idempotent operations","No manual deployment steps","Push-button deployment"],"benefits":["Consistent deployments","Deployable at any time","Lower error rates","Reduced deployment time"]},
+                {"id":"deterministic-tests","name":"Deterministic Tests","description":"Ensuring all tests produce the same result every time they run, eliminating flakiness and reliably reporting the status of the system. Unreliable tests are corrected or removed from the primary pipeline flow to maintain trust in the pipeline's decisions.","type":"practice","category":"behavior-enabled-automation","maturityLevel":0,"requirements":["Clean up test data after each test","Control all inputs (time, randomness, external services)","Isolate test execution (no shared state)","Mock external dependencies appropriately","Process for identifying unreliable tests","Tests can run in parallel without interference","Tests reliably indicate actual system status","Tests that cannot be fixed are removed from primary pipeline","Unreliable tests corrected immediately"],"benefits":["Builds trust in test suite","Eliminates wasted time on false failures","Enables trunk-based development","Fast, confident merging to trunk","Reduces investigation time","Reliable CI/CD pipelines","Supports frequent integration","Teams act on test failures immediately"]},
+                {"id":"developer-driven-support","name":"Developer Driven Support","description":"Development teams take ownership of supporting their services in production with on-call rotations.","type":"practice","category":"behavior","maturityLevel":3,"requirements":["Access to production monitoring and logs","Incident response training and runbooks","On-call rotation schedule for developers","Post-incident review process","Runbook documentation for services"],"benefits":["Better understanding of production behavior","Faster issue resolution and MTTR","Improved system design from operational feedback","Reduced reliance on separate operations team","Stronger ownership mindset in teams"]},
+                {"id":"evolutionary-coding","name":"Evolutionary Coding","description":"Code evolves incrementally through backward-compatible changes that allow existing behaviors and consumers to continue working until they are ready to be replaced.","type":"practice","category":"behavior","maturityLevel":3,"requirements":["Backward compatibility practices","Code review process and culture","Comprehensive test coverage for safety","Feature flag capabilities","Small, incremental changes"],"benefits":["Adaptable to changing requirements","Parallel operation of old and new code","Reduced risk of introducing breaking changes","Safe evolution without breaking consumers","Zero-downtime deployments"]},
+                {"id":"evolutionary-database","name":"Evolutionary Database","description":"Database design evolves incrementally through small, reversible, backward-compatible changes.","type":"practice","category":"behavior-enabled-automation","maturityLevel":1,"requirements":["Automated migration testing","Backward compatible schema changes","Incremental migration strategy","Parallel change pattern","Refactoring support tooling"],"benefits":["Better adaptability to change","Continuous database improvement","Lower risk database changes","Reduced downtime during migrations","Safer deployments"]},
+                {"id":"ephemeral-test-environments","name":"Ephemeral Test Environments","description":"Short-lived test environments created on-demand for testing and automatically destroyed after use, ensuring clean state and isolation.","type":"practice","category":"automation","maturityLevel":2,"requirements":["Automated environment creation and destruction","Infrastructure as Code for environment templates","On-demand provisioning capability","Versioned infrastructure configuration","Versioned test data management"],"benefits":["Faster test execution with parallel environments","Isolated testing without interference","Reduced environment conflicts","Cost optimization through on-demand provisioning","Consistent test environment state"]},
+                {"id":"exploratory-testing","name":"Exploratory Testing","description":"Unscripted manual testing to discover unexpected behaviors, edge cases, and usability issues.","type":"practice","category":"behavior","maturityLevel":3,"requirements":["Bug tracking and reporting system","Session-based testing approach","Skilled testers with domain knowledge","Test charter templates","Time-boxed testing sessions"],"benefits":["Complements automated testing","Discovers unexpected edge cases","Finds issues automation misses","Provides creative feedback on features","Validates user experience flows"]},
+                {"id":"feature-flags","name":"Feature Flags","description":"Runtime toggles that allow features to be deployed to production but not yet enabled for users.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Decouple deployment from release","Environment-specific controls","Flag lifecycle management","Toggle features at runtime","User/group targeting"],"benefits":["Deploy incomplete features safely","Enable A/B testing","Fast feature rollback","Gradual rollouts"]},
+                {"id":"functional-testing","name":"Functional Testing","description":"Testing that verifies the system behaves according to functional requirements and user expectations.","type":"practice","category":"behavior-enabled-automation","maturityLevel":1,"requirements":["Clear functional requirements","Gherkin or similar specification language","Test automation framework","Test data management","Test environments"],"benefits":["Builds stakeholder confidence","Documents expected behavior","Executable specifications","Prevents functional regressions","Validates business requirements"]},
+                {"id":"immutable-artifact","name":"Immutable Artifact","description":"Build artifacts once and promote the same artifact through all environments without rebuilding.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Build once, deploy many times","Configuration separated from artifact","No environment-specific builds","Same artifact across all environments","Versioned and traceable"],"benefits":["Confidence in what's being deployed","Consistency across environments","Faster deployments","Simplified rollback"]},
+                {"id":"infrastructure-automation","name":"Infrastructure Automation","description":"Infrastructure provisioned and configured through code, enabling repeatable and consistent environments.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Automated provisioning","Idempotent operations","Infrastructure as Code (IaC)","Tested like application code","Version controlled"],"benefits":["Disaster recovery","Documentation through code","Environment consistency","Fast environment creation"]},
+                {"id":"integration-testing","name":"Integration Testing","description":"Testing the interactions between components, services, and external systems to validate integration points.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["API and database integration tests","Integration test framework","Isolated test environments","Test data setup and teardown","Test doubles/mocks for external dependencies"],"benefits":["Catches interface contract issues","Reduces integration risks in production","Tests with real dependencies","Validates component interactions","Verifies end-to-end behavior"]},
+                {"id":"logging-infrastructure","name":"Logging Infrastructure","description":"Centralized logging system that aggregates logs from all application components and infrastructure.","type":"practice","category":"automation","maturityLevel":2,"requirements":["Centralized log storage","Fast querying","Log retention policies","Searchable logs","Structured logging"],"benefits":["Compliance","Easier troubleshooting","Performance analysis","Security monitoring"]},
+                {"id":"modular-system","name":"Modular System","description":"System architecture based on loosely coupled, independently deployable modules with clear boundaries.","type":"practice","category":"behavior-enabled-automation","maturityLevel":1,"requirements":["Clear module boundaries and interfaces","Dependency management and isolation","Independent deployment capability","Service contracts and APIs","Well-defined contracts between modules"],"benefits":["Better system scalability","Easier maintenance and evolution","Independent module deployment","Parallel development capability","Team autonomy and ownership"]},
+                {"id":"monitoring-and-alerting","name":"Monitoring and Alerting","description":"Comprehensive observability of system behavior with proactive alerting on anomalies and SLA violations.","type":"practice","category":"automation","maturityLevel":2,"requirements":["Alert management system (PagerDuty, OpsGenie)","Distributed tracing (Jaeger, Zipkin)","Log aggregation and analysis (ELK, Splunk)","Metrics collection infrastructure (Prometheus, DataDog)","Real-time dashboards and visualization"],"benefits":["Better system understanding and insights","Data-driven operational decisions","Early problem detection before user impact","Proactive issue resolution","Reduced MTTR with better diagnostics"]},
+                {"id":"on-demand-rollback","name":"On-demand Rollback","description":"Ability to quickly rollback to a previous known-good version if issues are detected in production.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Database migration compatibility","Fast execution (minutes)","Monitoring to detect issues","Rollback mechanism in place","Tested regularly"],"benefits":["Faster incident recovery","Increased deployment confidence","Lower MTTR (Mean Time To Recovery)","Reduced risk of deployments"]},
+                {"id":"performance-testing","name":"Performance Testing","description":"Continuous validation of system performance under load to identify bottlenecks and ensure scalability.","type":"practice","category":"behavior","maturityLevel":2,"requirements":["Continuous performance benchmarking","Load testing tools (JMeter, Gatling, k6)","Performance baselines and SLOs","Performance monitoring and profiling","Realistic test scenarios and data volumes"],"benefits":["Ensures SLA compliance","Identifies performance bottlenecks early","Optimizes resource usage and costs","Prevents performance regressions","Validates scalability requirements"]},
+                {"id":"pipeline-visibility","name":"Pipeline Visibility","description":"Make pipeline status and results visible to the entire team to encourage collaboration and quick response to failures.","type":"practice","category":"automation","maturityLevel":2,"requirements":["Build history accessible","Clear failure indicators","Notifications on failure","Real-time status display","Visible to all team members"],"benefits":["Faster failure response","Improved collaboration","Team accountability","Transparency"]},
+                {"id":"prioritized-features","name":"Prioritized Features","description":"Features are ranked by business value and worked on in strict priority order to maximize ROI.","type":"practice","category":"behavior","maturityLevel":3,"requirements":["Regular review of priorities cadence","Stakeholder collaboration process","Value metrics and success criteria"],"benefits":["Better resource allocation","Clearer team focus and alignment","Data-driven decision making","Maximizes business value delivery","Stakeholder satisfaction"]},
+                {"id":"product-goals","name":"Product Goals","description":"Clearly defined, measurable product goals that align team effort and provide direction for feature prioritization.","type":"practice","category":"behavior","maturityLevel":3,"requirements":["Clear product vision and mission","Goals communicated to entire team","Measurable objectives and key results (OKRs)","Regular goal review and adjustment","Stakeholder alignment on goals","Success metrics defined","Time-bound goal setting"],"benefits":["Better feature prioritization decisions","Clearer communication with stakeholders","Focused effort on high-impact work","Measurable progress tracking","Reduced waste on low-value features","Strategic product direction","Team alignment on what matters most"]},
+                {"id":"quality-gates","name":"Quality Gates & Thresholds","description":"Automated quality thresholds enforced in the CI/CD pipeline that must be met before code can progress to the next stage, ensuring consistent quality standards.","type":"practice","category":"behavior-enabled-automation","maturityLevel":2,"requirements":["Automated enforcement in pipeline","Blocking mechanism for failed gates","Clear pass/fail criteria","Configurable thresholds per project/environment","Defined quality thresholds (code coverage, complexity, vulnerabilities)","Visibility of gate status to team"],"benefits":["Enforces consistent quality standards","Makes quality expectations explicit","Prevents low-quality code from reaching production","Provides fast feedback on quality issues","Reduces technical debt accumulation"]},
+                {"id":"resilience-testing","name":"Resilience Testing","description":"Testing system behavior under failure conditions using chaos engineering principles.","type":"practice","category":"behavior","maturityLevel":2,"requirements":["Chaos engineering tools (Chaos Monkey, Gremlin)","Failure injection capabilities","Incident runbooks and procedures","Production-like test environments","Recovery validation procedures"],"benefits":["Builds confidence in disaster recovery","Identifies architectural weak points","Improves system robustness and reliability","Reduces MTTR in production incidents","Validates failure handling and recovery"]},
+                {"id":"secret-management","name":"Secret Management","description":"Secure storage and access control for secrets like passwords, API keys, and certificates.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Access controls","Audit logging","Encrypted at rest","No secrets in source code","Rotation capability"],"benefits":["Centralized management","Compliance","Enhanced security","Reduced secret sprawl"]},
+                {"id":"security-testing","name":"Security Testing","description":"Automated security testing integrated into the CI/CD pipeline to identify vulnerabilities early.","type":"practice","category":"behavior","maturityLevel":2,"requirements":["Dependency vulnerability scanning","Dynamic Application Security Testing (DAST)","Regular security scans and audits","Security testing in pipeline","Static Application Security Testing (SAST)"],"benefits":["Compliance with security standards","Continuous security validation","Early vulnerability detection","Prevents vulnerable code in production","Reduced security risks"]},
+                {"id":"smoke-testing","name":"Smoke Testing","description":"Quick validation tests after deployment to ensure critical functionality works and the system is stable.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["Automated smoke test suite","Clear pass/fail criteria","Fast execution (< 5 minutes)","Tests critical user journeys","Tests run immediately after deployment"],"benefits":["Builds confidence in deployments","Early warning system for production issues","Fast feedback on critical failures","Immediate deployment validation","Prevents broken deployments from persisting"]},
+                {"id":"static-analysis","name":"Static Analysis","description":"Automated analysis of code without executing it to find bugs, security issues, and code quality problems.","type":"practice","category":"automation","maturityLevel":2,"requirements":["CI integration","Code quality rules configuration","Quality gates and thresholds","Security vulnerability scanning","Static analysis tools (ESLint, SonarQube)"],"benefits":["Early bug detection before runtime","Enforces coding standards consistently","Faster code reviews","Improves security posture","Reduces technical debt"]},
+                {"id":"stop-the-line","name":"Stop-the-Line for Failed Builds","description":"Team immediately stops all feature work when the build fails and prioritizes fixing the build before continuing development.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["Build status visible to all team members","Clear build failure notifications to entire team","Designated responsibility for build failures","Fast build feedback (< 10 minutes)","Team commitment to stop feature work on build failure"],"benefits":["Builds team ownership of quality","Enforces quality discipline","Maintains always-releasable trunk","Prevents cascading build failures","Reduces time to fix integration issues"]},
+                {"id":"telemetry-observability","name":"Telemetry & Observability","description":"Comprehensive monitoring of application and infrastructure health to detect and diagnose issues quickly.","type":"practice","category":"automation","maturityLevel":2,"requirements":["Alerting on anomalies","Application metrics","Distributed tracing","Infrastructure metrics","Log aggregation","Real-time dashboards"],"benefits":["Early issue detection","Faster troubleshooting","Informed decision making","Performance insights"]},
+                {"id":"test-data-management","name":"Test Data Management","description":"System for creating, managing, and maintaining test data that supports automated testing.","type":"practice","category":"automation","maturityLevel":0,"requirements":["Data privacy compliance","Fast data refresh","Isolated test data","Representative data sets","Version controlled fixtures"],"benefits":["Compliance with regulations","Easier debugging","Faster test execution","Reliable tests"]},
+                {"id":"test-environment","name":"Production-like Test Environment","description":"Maintain test environments that closely mirror production to catch environment-specific issues early.","type":"practice","category":"automation","maturityLevel":1,"requirements":["Mirrors production infrastructure","Regularly validated against production","Same network topology where critical","Same OS and versions as production","Similar data volumes"],"benefits":["Accurate performance testing","Catch environment issues early","Confident deployments","Reduce production surprises"]},
+                {"id":"trunk-based-development","name":"Trunk-based Development","description":"All developers work on a single branch (trunk/main) with short-lived feature branches that integrate frequently.","type":"practice","category":"behavior","maturityLevel":1,"requirements":["All changes integrate into trunk","Branches originate from trunk","Branches re-integrate to trunk","Branches removed after merge","Short-lived branches (hours to days)"],"benefits":["Encourages small, frequent commits","Faster integration","Minimized merge conflicts","Simplified branching model"]},
+                {"id":"unified-team-backlog","name":"Unified Team Backlog","description":"Single shared backlog of work items (features, defects, maintenance) for the entire team with transparent priorities.","type":"practice","category":"behavior","maturityLevel":2,"requirements":["Priority ordering by business value","Regular backlog refinement sessions","Team access and visibility","Team ownership and accountability"],"benefits":["Better collaboration and alignment","Faster decision making","Improved transparency across team","Reduced silos and handoffs","Shared understanding of priorities"]},
+                {"id":"usability-testing","name":"Usability Testing","description":"Testing with real users to validate user experience, interface design, and workflow efficiency.","type":"practice","category":"behavior","maturityLevel":3,"requirements":["Analysis framework for findings","Iterative feedback incorporation","Recording capabilities (screen, audio)","Testing protocol and scripts","User recruitment process"],"benefits":["Identifies UX issues early","Improves user satisfaction and adoption","Informs design decisions with data","Reduces support and training costs","Validates actual user workflows"]},
+                {"id":"version-control","name":"Version Control","description":"All code, configuration, and infrastructure definitions stored in version control system.","type":"practice","category":"automation","maturityLevel":0,"requirements":["All team members have access","Commit frequently","Meaningful commit messages","Single source of truth"],"benefits":["Code review workflows","Collaboration enabled","Complete change history","Rollback capability"]},
+                {"id":"versioned-database","name":"Versioned Database","description":"Database schemas are version controlled and changes are tracked over time with full history.","type":"practice","category":"behavior-enabled-automation","maturityLevel":0,"requirements":["Change tracking and audit trail","Migration scripts in source control","Rollback capability","Schema documentation","Version control system for schema"],"benefits":["Better team collaboration","Clear change history and audit trail","Environment parity","Reproducible database state","Simplified rollbacks and recovery"]}
+            ]
+        };
+
+        // Initialize on load
+        renderPractices();
+
+        function renderPractices() {
+            const container = document.getElementById('practicesContainer');
+            const practices = practicesData.practices;
+
+            // Group by category
+            const automation = practices.filter(p => p.category === 'automation');
+            const behavior = practices.filter(p => p.category === 'behavior');
+            const behaviorEnabled = practices.filter(p => p.category === 'behavior-enabled-automation');
+
+            container.innerHTML = `
+                ${renderCategory('automation', 'Automation Practices', automation, '&#9881;')}
+                ${renderCategory('behavior', 'Behavior Practices', behavior, '&#128101;')}
+                ${renderCategory('behavior-enabled', 'Behavior-Enabled Automation', behaviorEnabled, '&#9889;')}
+            `;
+
+            // Add click handlers
+            document.querySelectorAll('.practice-tile').forEach(tile => {
+                tile.onclick = () => openModal(tile.dataset.id);
+            });
+        }
+
+        function renderCategory(type, title, practices, icon) {
+            return `
+                <div class="category-section">
+                    <div class="category-header">
+                        <div class="category-icon ${type}">${icon}</div>
+                        <h2 class="category-title">${title}</h2>
+                        <span class="category-count ${type}">${practices.length} practices</span>
+                    </div>
+                    <div class="practice-grid">
+                        ${practices.map(p => `
+                            <div class="practice-tile ${type}" data-id="${p.id}">
+                                <div class="practice-check">&#10003;</div>
+                                <div class="practice-name">${p.name}</div>
+                                <div class="practice-id">${p.id}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function openModal(practiceId) {
+            const practice = practicesData.practices.find(p => p.id === practiceId);
+            if (!practice) return;
+
+            // Title
+            document.getElementById('modalTitle').textContent = practice.name;
+
+            // Meta badges
+            const categoryClass = practice.category.replace('-automation', '-enabled-automation');
+            document.getElementById('modalMeta').innerHTML = `
+                <span class="modal-badge type">${practice.type}</span>
+                <span class="modal-badge ${categoryClass}">${formatCategory(practice.category)}</span>
+                <span class="modal-badge maturity">Level ${practice.maturityLevel}</span>
+            `;
+
+            // Description
+            document.getElementById('modalDescription').textContent = practice.description;
+
+            // Requirements
+            document.getElementById('modalRequirements').innerHTML = practice.requirements.map(req => `
+                <div class="requirement-item">
+                    <span class="requirement-check">&#10003;</span>
+                    <span class="requirement-text">${req}</span>
+                </div>
+            `).join('');
+
+            // Benefits
+            document.getElementById('modalBenefits').innerHTML = practice.benefits.map(ben => `
+                <div class="benefit-item">
+                    <span class="benefit-icon">&#9733;</span>
+                    <span class="benefit-text">${ben}</span>
+                </div>
+            `).join('');
+
+            // Rego policy
+            document.getElementById('regoFilename').textContent = `${practiceId}.rego`;
+            document.getElementById('regoCode').innerHTML = generateRego(practice);
+
+            // Show modal
+            document.getElementById('practiceModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('practiceModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function formatCategory(category) {
+            return category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        }
+
+        function generateRego(practice) {
+            const pkg = practice.id.replace(/-/g, '_');
+            const reqs = practice.requirements;
+
+            let code = `<span class="comment"># Cortex.io Scorecard Policy: ${practice.name}</span>
+<span class="comment"># Category: ${practice.category}</span>
+<span class="comment"># Maturity Level: ${practice.maturityLevel}</span>
+<span class="comment"># Type: ${practice.type}</span>
+
+<span class="keyword">package</span> cortex.scorecards.${pkg}
+
+<span class="keyword">import</span> future.keywords.if
+<span class="keyword">import</span> future.keywords.in
+<span class="keyword">import</span> future.keywords.contains
+
+<span class="comment"># Default: practice requirements not met</span>
+<span class="keyword">default</span> <span class="function">compliant</span> := <span class="boolean">false</span>
+
+<span class="comment"># Practice is compliant when all requirements are satisfied</span>
+<span class="function">compliant</span> <span class="keyword">if</span> {
+    <span class="function">all_requirements_met</span>
+}
+
+<span class="comment"># Check all requirements</span>
+<span class="function">all_requirements_met</span> <span class="keyword">if</span> {
+    count(<span class="function">failed_requirements</span>) == 0
+}
+
+<span class="comment"># Collect failed requirements</span>
+<span class="function">failed_requirements</span> <span class="keyword">contains</span> req <span class="keyword">if</span> {
+    some req <span class="keyword">in</span> <span class="function">requirements</span>
+    not <span class="function">requirement_met</span>(req)
+}
+
+<span class="comment"># Define requirements for ${practice.name}</span>
+<span class="function">requirements</span> := [
+${reqs.map(r => `    <span class="string">"${r}"</span>`).join(',\n')}
+]
+
+<span class="comment"># Requirement validation rules</span>
+`;
+            reqs.slice(0, 3).forEach((req, i) => {
+                const field = req.toLowerCase().replace(/[^a-z0-9]+/g, '_').substring(0, 25);
+                code += `
+<span class="comment"># ${req}</span>
+<span class="function">requirement_met</span>(<span class="string">"${req}"</span>) <span class="keyword">if</span> {
+    input.entity.custom_data.${field} == <span class="boolean">true</span>
+}
+`;
+            });
+
+            code += `
+<span class="comment"># Scorecard output</span>
+<span class="function">result</span> := {
+    <span class="string">"practice"</span>: <span class="string">"${practice.name}"</span>,
+    <span class="string">"compliant"</span>: <span class="function">compliant</span>,
+    <span class="string">"maturity_level"</span>: ${practice.maturityLevel},
+    <span class="string">"failed_requirements"</span>: <span class="function">failed_requirements</span>
+}`;
+            return code;
+        }
+
+        function copyRego() {
+            const code = document.getElementById('regoCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                const btn = document.querySelector('.rego-copy');
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 2000);
+            });
+        }
+
+        // Close on overlay click
+        document.getElementById('practiceModal').onclick = function(e) {
+            if (e.target === this) closeModal();
+        };
+
+        // Close on Escape
+        document.onkeydown = function(e) {
+            if (e.key === 'Escape') closeModal();
+        };
+    </script>
+</body>
+</html>

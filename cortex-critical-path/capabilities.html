@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platform Capabilities | Platform as a Product</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Devicon CSS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
+    <style>
+        :root {
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            /* Product Colors - matching roadmap.html */
+            --coder-color: #10b981;
+            --cortex-color: #237cb8;
+            --kratix-color: #8b5cf6;
+
+            /* Layer Colors */
+            --layer-perf: #3b82f6;
+            --layer-qa: #10b981;
+            --layer-appsec: #f59e0b;
+            --layer-mo: #8b5cf6;
+            --layer-pac: #06b6d4;
+            --layer-docs: #ec4899;
+
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            --border-subtle: rgba(187, 187, 187, 0.12);
+            --critical-path: linear-gradient(90deg, #666666, #237cb8, #ff6600);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(35, 124, 184, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--fiserv-orange);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        h1 span {
+            background: var(--critical-path);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Placemat Container */
+        .placemat-container {
+            animation: slideUp 0.6s ease-out 0.2s both;
+        }
+
+        /* Column Headers */
+        .column-headers {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .column-header {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .column-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--critical-path);
+        }
+
+        .column-header h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .column-header .column-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Placemat Grid */
+        .placemat-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .placemat-column {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .placemat-column > * {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .tech-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 0.6rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            min-height: 48px;
+        }
+
+        .tech-item:hover {
+            background: rgba(0, 0, 0, 0.4);
+            transform: translateX(4px);
+        }
+
+        .tech-item i {
+            font-size: 1.5rem;
+            width: 32px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .tech-item .tech-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .tech-item .tech-desc {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        /* Strategy/Type Items without icons */
+        .strategy-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 0.6rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            min-height: 48px;
+        }
+
+        .strategy-item:hover {
+            background: rgba(0, 0, 0, 0.4);
+            transform: translateX(4px);
+        }
+
+        .strategy-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .strategy-icon.blue { background: rgba(35, 124, 184, 0.2); }
+        .strategy-icon.orange { background: rgba(255, 102, 0, 0.2); }
+        .strategy-icon.green { background: rgba(16, 185, 129, 0.2); }
+        .strategy-icon.purple { background: rgba(139, 92, 246, 0.2); }
+
+        .strategy-item .strategy-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .strategy-item .strategy-desc {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        /* OS Support Legend */
+        .os-legend {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+        }
+
+        .os-legend-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-right: auto;
+        }
+
+        .os-legend-items {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .os-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .os-legend-item i {
+            font-size: 1.5rem;
+        }
+
+        .os-legend-item .devicon-linux-plain {
+            color: #fcc624;
+        }
+
+        .os-legend-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .os-legend-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .os-legend-flavors {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        /* OS Badges on items */
+        .os-badges {
+            display: flex;
+            gap: 0.25rem;
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .os-badges i {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .os-badges .devicon-linux-plain {
+            color: #fcc624;
+        }
+
+        .os-badges .devicon-windows11-original {
+            color: #00adef;
+        }
+
+        .tech-item .os-badges,
+        .strategy-item .os-badges {
+            padding-left: 0.5rem;
+            border-left: 1px solid var(--border-subtle);
+        }
+
+        /* Support Layers */
+        .support-layers {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            animation: slideUp 0.6s ease-out 0.4s both;
+        }
+
+        .layer-row {
+            display: flex;
+            align-items: center;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .layer-row:hover {
+            transform: translateY(-2px);
+        }
+
+        .layer-label {
+            width: 200px;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .layer-label .layer-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .layer-row.perf .layer-label { border-left: 4px solid var(--layer-perf); }
+        .layer-row.perf .layer-icon { background: rgba(59, 130, 246, 0.2); }
+        .layer-row.perf:hover { box-shadow: 0 10px 40px rgba(59, 130, 246, 0.15); }
+
+        .layer-row.qa .layer-label { border-left: 4px solid var(--layer-qa); }
+        .layer-row.qa .layer-icon { background: rgba(16, 185, 129, 0.2); }
+        .layer-row.qa:hover { box-shadow: 0 10px 40px rgba(16, 185, 129, 0.15); }
+
+        .layer-row.appsec .layer-label { border-left: 4px solid var(--layer-appsec); }
+        .layer-row.appsec .layer-icon { background: rgba(245, 158, 11, 0.2); }
+        .layer-row.appsec:hover { box-shadow: 0 10px 40px rgba(245, 158, 11, 0.15); }
+
+        .layer-row.mo .layer-label { border-left: 4px solid var(--layer-mo); }
+        .layer-row.mo .layer-icon { background: rgba(139, 92, 246, 0.2); }
+        .layer-row.mo:hover { box-shadow: 0 10px 40px rgba(139, 92, 246, 0.15); }
+
+        .layer-row.pac .layer-label { border-left: 4px solid var(--layer-pac); }
+        .layer-row.pac .layer-icon { background: rgba(6, 182, 212, 0.2); }
+        .layer-row.pac:hover { box-shadow: 0 10px 40px rgba(6, 182, 212, 0.15); }
+
+        .layer-row.docs .layer-label { border-left: 4px solid var(--layer-docs); }
+        .layer-row.docs .layer-icon { background: rgba(236, 72, 153, 0.2); }
+        .layer-row.docs:hover { box-shadow: 0 10px 40px rgba(236, 72, 153, 0.15); }
+
+        .layer-bar {
+            flex: 1;
+            height: 60px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .layer-bar::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 8px;
+            transform: translateY(-50%);
+            border-radius: 4px;
+            opacity: 0.6;
+        }
+
+        .layer-row.perf .layer-bar::before {
+            background: linear-gradient(90deg, var(--layer-perf), rgba(59, 130, 246, 0.3));
+        }
+
+        .layer-row.qa .layer-bar::before {
+            background: linear-gradient(90deg, var(--layer-qa), rgba(16, 185, 129, 0.3));
+        }
+
+        .layer-row.appsec .layer-bar::before {
+            background: linear-gradient(90deg, var(--layer-appsec), rgba(245, 158, 11, 0.3));
+        }
+
+        .layer-row.mo .layer-bar::before {
+            background: linear-gradient(90deg, var(--layer-mo), rgba(139, 92, 246, 0.3));
+        }
+
+        .layer-row.pac .layer-bar::before {
+            background: linear-gradient(90deg, var(--layer-pac), rgba(6, 182, 212, 0.3));
+        }
+
+        .layer-row.docs .layer-bar::before {
+            background: linear-gradient(90deg, var(--layer-docs), rgba(236, 72, 153, 0.3));
+        }
+
+        .layer-content {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0 1.5rem;
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
+            flex: 1;
+        }
+
+        .layer-tools {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding-right: 1.5rem;
+            border-right: 1px solid var(--border-subtle);
+        }
+
+        .layer-tool {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
+
+        .layer-tool i {
+            font-size: 1.25rem;
+        }
+
+        .layer-tool img.tool-logo {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            filter: brightness(1.1);
+        }
+
+        .layer-tool .tool-icon {
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .layer-row.perf .layer-tool .tool-icon { background: var(--layer-perf); }
+        .layer-row.qa .layer-tool .tool-icon { background: var(--layer-qa); }
+        .layer-row.appsec .layer-tool .tool-icon { background: var(--layer-appsec); }
+        .layer-row.mo .layer-tool .tool-icon { background: var(--layer-mo); }
+        .layer-row.pac .layer-tool .tool-icon { background: var(--layer-pac); }
+        .layer-row.docs .layer-tool .tool-icon { background: var(--layer-docs); }
+
+        .layer-capabilities {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .layer-cap {
+            font-size: 0.7rem;
+            padding: 0.3rem 0.6rem;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 100px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            font-weight: 500;
+        }
+
+        /* Section Title */
+        .section-title {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .section-heading {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            animation: fadeIn 0.8s ease-out 0.6s both;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .column-headers,
+            .placemat-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .column-headers,
+            .placemat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .layer-label {
+                width: 160px;
+                padding: 0.75rem 1rem;
+            }
+
+            .layer-capabilities {
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .column-headers,
+            .placemat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .layer-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .layer-label {
+                width: 100%;
+                border-left: none !important;
+                border-top: 4px solid;
+            }
+
+            .layer-row.perf .layer-label { border-top-color: var(--layer-perf); }
+            .layer-row.qa .layer-label { border-top-color: var(--layer-qa); }
+            .layer-row.appsec .layer-label { border-top-color: var(--layer-appsec); }
+            .layer-row.mo .layer-label { border-top-color: var(--layer-mo); }
+
+            .layer-bar {
+                height: auto;
+                padding: 1rem;
+            }
+
+            .layer-bar::before {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">
+                <span>&larr;</span>
+                <span>Back to Critical Path</span>
+            </a>
+        </nav>
+
+        <header>
+            <div class="logo-badge">PLATFORM CAPABILITIES</div>
+            <h1>Flight Deck <span>Technology Matrix</span></h1>
+            <p class="subtitle">Comprehensive view of supported languages, pipelines, deployment strategies, and cross-cutting engineering capabilities</p>
+        </header>
+
+        <!-- Placemat Section -->
+        <div class="placemat-container">
+            <div class="section-title">
+                <div class="section-label">Technology Stack</div>
+                <h2 class="section-heading">Platform Support Matrix</h2>
+            </div>
+
+            <!-- OS Support Legend -->
+            <div class="os-legend">
+                <div class="os-legend-label">Operating System Support</div>
+                <div class="os-legend-items">
+                    <div class="os-legend-item">
+                        <i class="devicon-linux-plain"></i>
+                        <div class="os-legend-details">
+                            <span class="os-legend-name">Linux</span>
+                            <span class="os-legend-flavors">RHEL, Ubuntu, Alpine</span>
+                        </div>
+                    </div>
+                    <div class="os-legend-item">
+                        <i class="devicon-windows11-original colored"></i>
+                        <div class="os-legend-details">
+                            <span class="os-legend-name">Windows</span>
+                            <span class="os-legend-flavors">Server 2019, 2022</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column Headers -->
+            <div class="column-headers">
+                <div class="column-header">
+                    <h3>Languages</h3>
+                    <span class="column-subtitle">Runtime Support</span>
+                </div>
+                <div class="column-header">
+                    <h3>Build Tools</h3>
+                    <span class="column-subtitle">Runner/CDE Dependencies</span>
+                </div>
+                <div class="column-header">
+                    <h3>Deployment Strategies</h3>
+                    <span class="column-subtitle">Release Patterns</span>
+                </div>
+                <div class="column-header">
+                    <h3>Deployment Types</h3>
+                    <span class="column-subtitle">Workload Models</span>
+                </div>
+                <div class="column-header">
+                    <h3>Deployment Destinations</h3>
+                    <span class="column-subtitle">Target Platforms</span>
+                </div>
+            </div>
+
+            <!-- Placemat Grid -->
+            <div class="placemat-grid">
+                <!-- Languages Column -->
+                <div class="placemat-column">
+                    <div class="tech-item">
+                        <i class="devicon-java-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Java</div>
+                            <div class="tech-desc">Spring Boot, Jakarta EE</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-csharp-plain colored"></i>
+                        <div>
+                            <div class="tech-name">C# / .NET</div>
+                            <div class="tech-desc">ASP.NET Core, Blazor</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-python-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Python</div>
+                            <div class="tech-desc">Django, FastAPI, Flask</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-javascript-plain colored"></i>
+                        <div>
+                            <div class="tech-name">JavaScript</div>
+                            <div class="tech-desc">Node.js, React, Vue</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-typescript-plain colored"></i>
+                        <div>
+                            <div class="tech-name">TypeScript</div>
+                            <div class="tech-desc">Angular, NestJS</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-go-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Go</div>
+                            <div class="tech-desc">Gin, Echo, Fiber</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Build Tools Column -->
+                <div class="placemat-column">
+                    <div class="tech-item">
+                        <i class="devicon-maven-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Maven / Gradle / Ant</div>
+                            <div class="tech-desc">Java build & dependencies</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-nuget-original colored"></i>
+                        <div>
+                            <div class="tech-name">NuGet / MSBuild</div>
+                            <div class="tech-desc">.NET packages & build</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-python-plain colored"></i>
+                        <div>
+                            <div class="tech-name">pip / Poetry</div>
+                            <div class="tech-desc">Python packages</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-npm-original-wordmark colored"></i>
+                        <div>
+                            <div class="tech-name">npm / yarn / pnpm</div>
+                            <div class="tech-desc">Node.js packages</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-go-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Go Modules</div>
+                            <div class="tech-desc">Go dependencies</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-docker-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Docker / Buildah</div>
+                            <div class="tech-desc">Container builds</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deployment Strategies Column -->
+                <div class="placemat-column">
+                    <div class="strategy-item">
+                        <div class="strategy-icon blue">
+                            <span>&#128640;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Rolling Update</div>
+                            <div class="strategy-desc">Gradual replacement</div>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon green">
+                            <span>&#128309;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Blue/Green</div>
+                            <div class="strategy-desc">Zero-downtime switch</div>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon orange">
+                            <span>&#128038;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Canary</div>
+                            <div class="strategy-desc">Progressive rollout</div>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon purple">
+                            <span>&#128268;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Feature Flags</div>
+                            <div class="strategy-desc">Toggle-based release</div>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon blue">
+                            <span>&#9850;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">A/B Testing</div>
+                            <div class="strategy-desc">Experiment-driven</div>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon green">
+                            <span>&#128260;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Recreate</div>
+                            <div class="strategy-desc">Full replacement</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deployment Types Column -->
+                <div class="placemat-column">
+                    <div class="tech-item">
+                        <i class="devicon-docker-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Containers</div>
+                            <div class="tech-desc">Docker, Podman</div>
+                        </div>
+                        <div class="os-badges">
+                            <i class="devicon-linux-plain" title="Linux"></i>
+                            <i class="devicon-windows11-original" title="Windows"></i>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-kubernetes-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Kubernetes</div>
+                            <div class="tech-desc">Pods, Deployments</div>
+                        </div>
+                        <div class="os-badges">
+                            <i class="devicon-linux-plain" title="Linux"></i>
+                            <i class="devicon-windows11-original" title="Windows"></i>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon purple">
+                            <span>&#955;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Serverless</div>
+                            <div class="strategy-desc">Functions as a Service</div>
+                        </div>
+                        <div class="os-badges">
+                            <i class="devicon-linux-plain" title="Linux"></i>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon blue">
+                            <span>&#128421;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Virtual Machines</div>
+                            <div class="strategy-desc">Traditional VMs</div>
+                        </div>
+                        <div class="os-badges">
+                            <i class="devicon-linux-plain" title="Linux"></i>
+                            <i class="devicon-windows11-original" title="Windows"></i>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-helm-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Helm Charts</div>
+                            <div class="tech-desc">K8s packaging</div>
+                        </div>
+                        <div class="os-badges">
+                            <i class="devicon-linux-plain" title="Linux"></i>
+                            <i class="devicon-windows11-original" title="Windows"></i>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon green">
+                            <span>&#128230;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Platform Services</div>
+                            <div class="strategy-desc">Managed PaaS</div>
+                        </div>
+                        <div class="os-badges">
+                            <i class="devicon-linux-plain" title="Linux"></i>
+                            <i class="devicon-windows11-original" title="Windows"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deployment Destinations Column -->
+                <div class="placemat-column">
+                    <div class="tech-item">
+                        <i class="devicon-azure-plain colored"></i>
+                        <div>
+                            <div class="tech-name">Azure (AKS)</div>
+                            <div class="tech-desc">Primary public cloud</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-amazonwebservices-plain-wordmark colored"></i>
+                        <div>
+                            <div class="tech-name">AWS (EKS)</div>
+                            <div class="tech-desc">Secondary public cloud</div>
+                        </div>
+                    </div>
+                    <div class="tech-item">
+                        <i class="devicon-googlecloud-plain colored"></i>
+                        <div>
+                            <div class="tech-name">GCP (GKE)</div>
+                            <div class="tech-desc">Future expansion</div>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon purple">
+                            <span>&#9729;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Private Cloud</div>
+                            <div class="strategy-desc">Tanzu, OpenShift, Orange.os</div>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon blue">
+                            <span>&#127970;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">On-Premises</div>
+                            <div class="strategy-desc">Data center</div>
+                        </div>
+                    </div>
+                    <div class="strategy-item">
+                        <div class="strategy-icon green">
+                            <span>&#128260;</span>
+                        </div>
+                        <div>
+                            <div class="strategy-name">Hybrid Cloud</div>
+                            <div class="strategy-desc">Multi-environment</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support Layers Section -->
+        <div class="support-layers">
+            <div class="section-title">
+                <div class="section-label">Cross-Cutting Capabilities</div>
+                <h2 class="section-heading">Engineering Support Layers</h2>
+            </div>
+
+            <!-- Performance Engineering Layer -->
+            <div class="layer-row perf">
+                <div class="layer-label">
+                    <div class="layer-icon">&#9889;</div>
+                    <span>Performance Engineering</span>
+                </div>
+                <div class="layer-bar">
+                    <div class="layer-content">
+                        <div class="layer-tools">
+                            <div class="layer-tool">
+                                <img class="tool-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/apachejmeter.svg" alt="JMeter" style="filter: invert(1) brightness(1.2);">
+                                <span>JMeter</span>
+                            </div>
+                            <div class="layer-tool">
+                                <span class="tool-icon">LR</span>
+                                <span>LoadRunner</span>
+                            </div>
+                        </div>
+                        <div class="layer-capabilities">
+                            <span class="layer-cap">Load Testing</span>
+                            <span class="layer-cap">Stress Testing</span>
+                            <span class="layer-cap">APM Integration</span>
+                            <span class="layer-cap">Profiling</span>
+                            <span class="layer-cap">Capacity Planning</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Assurance Layer -->
+            <div class="layer-row qa">
+                <div class="layer-label">
+                    <div class="layer-icon">&#10003;</div>
+                    <span>Quality Assurance</span>
+                </div>
+                <div class="layer-bar">
+                    <div class="layer-content">
+                        <div class="layer-tools">
+                            <div class="layer-tool">
+                                <img class="tool-logo" src="https://www.vectorlogo.zone/logos/saucelabs/saucelabs-icon.svg" alt="SauceLabs">
+                                <span>SauceLabs</span>
+                            </div>
+                            <div class="layer-tool">
+                                <i class="devicon-qtest-plain colored"></i>
+                                <span>qTest</span>
+                            </div>
+                        </div>
+                        <div class="layer-capabilities">
+                            <span class="layer-cap">Unit Testing</span>
+                            <span class="layer-cap">Integration Testing</span>
+                            <span class="layer-cap">E2E Testing</span>
+                            <span class="layer-cap">Code Coverage</span>
+                            <span class="layer-cap">Test Automation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AppSec Layer -->
+            <div class="layer-row appsec">
+                <div class="layer-label">
+                    <div class="layer-icon">&#128274;</div>
+                    <span>Application Security</span>
+                </div>
+                <div class="layer-bar">
+                    <div class="layer-content">
+                        <div class="layer-tools">
+                            <div class="layer-tool">
+                                <span class="tool-icon">F</span>
+                                <span>Fortify</span>
+                            </div>
+                            <div class="layer-tool">
+                                <img class="tool-logo" src="https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/sonatype.svg" alt="Sonatype" style="filter: invert(1) brightness(1.2);">
+                                <span>Sonatype</span>
+                            </div>
+                            <div class="layer-tool">
+                                <span class="tool-icon">A</span>
+                                <span>Apiiro</span>
+                            </div>
+                        </div>
+                        <div class="layer-capabilities">
+                            <span class="layer-cap">SAST</span>
+                            <span class="layer-cap">SCA</span>
+                            <span class="layer-cap">DAST</span>
+                            <span class="layer-cap">Container Scanning</span>
+                            <span class="layer-cap">Secret Detection</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- M&O Layer -->
+            <div class="layer-row mo">
+                <div class="layer-label">
+                    <div class="layer-icon">&#128200;</div>
+                    <span>Monitoring & Observability</span>
+                </div>
+                <div class="layer-bar">
+                    <div class="layer-content">
+                        <div class="layer-tools">
+                            <div class="layer-tool">
+                                <i class="devicon-dynatrace-plain colored"></i>
+                                <span>Dynatrace</span>
+                            </div>
+                            <div class="layer-tool">
+                                <i class="devicon-splunk-original colored"></i>
+                                <span>Splunk</span>
+                            </div>
+                            <div class="layer-tool">
+                                <img class="tool-logo" src="https://www.vectorlogo.zone/logos/moogsoft/moogsoft-icon.svg" alt="Moogsoft">
+                                <span>Moogsoft</span>
+                            </div>
+                            <div class="layer-tool">
+                                <i class="devicon-grafana-original colored"></i>
+                                <span>Grafana</span>
+                            </div>
+                        </div>
+                        <div class="layer-capabilities">
+                            <span class="layer-cap">Distributed Tracing</span>
+                            <span class="layer-cap">Log Aggregation</span>
+                            <span class="layer-cap">Alerting</span>
+                            <span class="layer-cap">Dashboards</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Policy-as-Code Layer -->
+            <div class="layer-row pac">
+                <div class="layer-label">
+                    <div class="layer-icon">&#128220;</div>
+                    <span>Policy-as-Code</span>
+                </div>
+                <div class="layer-bar">
+                    <div class="layer-content">
+                        <div class="layer-tools">
+                            <div class="layer-tool">
+                                <img class="tool-logo" src="https://www.vectorlogo.zone/logos/openpolicyagent/openpolicyagent-icon.svg" alt="OPA">
+                                <span>Open Policy Agent</span>
+                            </div>
+                        </div>
+                        <div class="layer-capabilities">
+                            <span class="layer-cap">Admission Control</span>
+                            <span class="layer-cap">Authorization</span>
+                            <span class="layer-cap">Rego Policies</span>
+                            <span class="layer-cap">Compliance Gates</span>
+                            <span class="layer-cap">Guardrails</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Docs-as-Code Layer -->
+            <div class="layer-row docs">
+                <div class="layer-label">
+                    <div class="layer-icon">&#128195;</div>
+                    <span>Docs-as-Code</span>
+                </div>
+                <div class="layer-bar">
+                    <div class="layer-content">
+                        <div class="layer-tools">
+                            <div class="layer-tool">
+                                <i class="devicon-unifiedmodelinglanguage-plain colored"></i>
+                                <span>UML</span>
+                            </div>
+                            <div class="layer-tool">
+                                <i class="devicon-markdown-original"></i>
+                                <span>Markdown</span>
+                            </div>
+                            <div class="layer-tool">
+                                <i class="devicon-github-original"></i>
+                                <span>GitHub Pages</span>
+                            </div>
+                            <div class="layer-tool">
+                                <i class="devicon-gitlab-plain colored"></i>
+                                <span>GitLab Pages</span>
+                            </div>
+                        </div>
+                        <div class="layer-capabilities">
+                            <span class="layer-cap">Architecture Diagrams</span>
+                            <span class="layer-cap">API Documentation</span>
+                            <span class="layer-cap">Runbooks</span>
+                            <span class="layer-cap">Version Control</span>
+                            <span class="layer-cap">Static Site Generation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • PLATFORM CAPABILITIES</p>
+        </footer>
+    </div>
+</body>
+</html>

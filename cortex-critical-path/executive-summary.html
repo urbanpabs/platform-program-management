@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Summary | Cortex-Synapse-Atlas Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Fiserv Brand Colors */
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-dark: #333333;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            /* Applied Theme */
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            --cortex-color: #237cb8;
+            --synapse-color: #ff6600;
+            --atlas-color: #10b981;
+
+            --border-subtle: rgba(187, 187, 187, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(35, 124, 184, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--fiserv-orange);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 .highlight {
+            background: linear-gradient(90deg, var(--fiserv-blue), var(--fiserv-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Value Proposition Hero */
+        .value-hero {
+            background: linear-gradient(135deg, rgba(35, 124, 184, 0.15), rgba(255, 102, 0, 0.1));
+            border: 1px solid rgba(35, 124, 184, 0.3);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-bottom: 4rem;
+            text-align: center;
+            animation: slideUp 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .investment-highlight {
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .investment-item {
+            text-align: center;
+        }
+
+        .investment-amount {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.25rem;
+        }
+
+        .investment-amount.invest { color: var(--fiserv-blue); }
+        .investment-amount.return { color: var(--fiserv-orange); }
+
+        .investment-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .value-statement {
+            font-size: 1.35rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            max-width: 900px;
+            margin: 0 auto 2rem;
+        }
+
+        .selling-points {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .selling-point {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 100px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .selling-point.stability { color: var(--fiserv-blue); }
+        .selling-point.quality { color: #a855f7; }
+        .selling-point.efficiency { color: var(--atlas-color); }
+        .selling-point.velocity { color: #f59e0b; }
+        .selling-point.trust { color: var(--fiserv-orange); }
+        .selling-point.resilience { color: #06b6d4; }
+
+        /* Section Title */
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        .section-headline {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        /* Pain Point Banner */
+        .pain-banner {
+            background: rgba(255, 102, 0, 0.1);
+            border: 1px solid rgba(255, 102, 0, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            animation: slideUp 0.8s ease-out 0.3s both;
+        }
+
+        .pain-stat {
+            text-align: center;
+        }
+
+        .pain-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--fiserv-orange);
+        }
+
+        .pain-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .pain-arrow {
+            font-size: 2rem;
+            color: var(--text-muted);
+        }
+
+        .pain-solution {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--fiserv-blue);
+        }
+
+        /* Pillars Grid */
+        .pillars {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+
+        @media (max-width: 1000px) {
+            .pillars {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pillar-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: slideUp 0.6s ease-out both;
+        }
+
+        .pillar-card:nth-child(1) { animation-delay: 0.4s; }
+        .pillar-card:nth-child(2) { animation-delay: 0.5s; }
+        .pillar-card:nth-child(3) { animation-delay: 0.6s; }
+
+        .pillar-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+        }
+
+        .pillar-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .pillar-card.cortex::before { background: var(--cortex-color); }
+        .pillar-card.synapse::before { background: var(--synapse-color); }
+        .pillar-card.atlas::before { background: var(--atlas-color); }
+
+        .pillar-card.cortex:hover { box-shadow: 0 20px 60px rgba(35, 124, 184, 0.25); }
+        .pillar-card.synapse:hover { box-shadow: 0 20px 60px rgba(255, 102, 0, 0.25); }
+        .pillar-card.atlas:hover { box-shadow: 0 20px 60px rgba(16, 185, 129, 0.25); }
+
+        .pillar-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pillar-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            flex-shrink: 0;
+        }
+
+        .pillar-card.cortex .pillar-icon { background: rgba(35, 124, 184, 0.2); }
+        .pillar-card.synapse .pillar-icon { background: rgba(255, 102, 0, 0.2); }
+        .pillar-card.atlas .pillar-icon { background: rgba(16, 185, 129, 0.2); }
+
+        .pillar-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.25rem;
+        }
+
+        .pillar-card.cortex .pillar-name { color: var(--cortex-color); }
+        .pillar-card.synapse .pillar-name { color: var(--synapse-color); }
+        .pillar-card.atlas .pillar-name { color: var(--atlas-color); }
+
+        .pillar-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .pillar-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Feature List */
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .feature-item {
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .feature-item:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+        }
+
+        .pain-erased {
+            font-size: 0.8rem;
+            color: var(--atlas-color);
+            padding: 0.5rem 0.75rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--atlas-color);
+        }
+
+        .pain-erased::before {
+            content: '✓ Pain Erased: ';
+            font-weight: 600;
+        }
+
+        /* Vision Banner */
+        .vision-banner {
+            background: linear-gradient(135deg, var(--bg-card), rgba(35, 124, 184, 0.1));
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 3rem;
+            text-align: center;
+            animation: slideUp 0.8s ease-out 0.7s both;
+        }
+
+        .vision-quote {
+            font-size: 1.5rem;
+            font-weight: 500;
+            line-height: 1.6;
+            color: var(--text-primary);
+            max-width: 800px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .vision-quote em {
+            color: var(--fiserv-orange);
+            font-style: normal;
+        }
+
+        .vision-tagline {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            animation: fadeIn 0.8s ease-out 0.8s both;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .value-hero {
+                padding: 2rem 1.5rem;
+            }
+
+            .investment-highlight {
+                gap: 2rem;
+            }
+
+            .pain-banner {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .pain-arrow {
+                transform: rotate(90deg);
+            }
+
+            .pillar-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">
+                <span>&larr;</span>
+                <span>Back to Critical Path</span>
+            </a>
+        </nav>
+
+        <header>
+            <div class="logo-badge">EXECUTIVE SUMMARY</div>
+            <h1>The <span class="highlight">Flight Deck</span> Platform</h1>
+        </header>
+
+        <!-- Value Proposition Hero -->
+        <section class="value-hero">
+            <div class="investment-highlight">
+                <div class="investment-item">
+                    <div class="investment-amount invest">$20M</div>
+                    <div class="investment-label">Labor Capital & Licenses</div>
+                </div>
+                <div class="investment-item">
+                    <div class="investment-amount return">$1B+</div>
+                    <div class="investment-label">Addressable Value</div>
+                </div>
+            </div>
+
+            <p class="value-statement">
+                A <strong>$20 million</strong> investment in labor capital and initial license procurement (1,000 Coder seats, 500 Cortex seats) establishes the manufacturing capability to address <strong>$1 Billion+</strong> in cognitive load from context switching, opportunity cost, and redundant efforts in collecting and visualizing data across our engineering organization.
+            </p>
+
+            <div class="selling-points">
+                <div class="selling-point stability">
+                    <span>🏗️</span> Stability
+                </div>
+                <div class="selling-point quality">
+                    <span>✨</span> Quality
+                </div>
+                <div class="selling-point efficiency">
+                    <span>⚙️</span> Efficiency
+                </div>
+                <div class="selling-point velocity">
+                    <span>⚡</span> Velocity
+                </div>
+                <div class="selling-point trust">
+                    <span>🛡️</span> Trust
+                </div>
+                <div class="selling-point resilience">
+                    <span>🔄</span> Resilience
+                </div>
+            </div>
+        </section>
+
+        <!-- Pain Point Banner -->
+        <div class="pain-banner">
+            <div class="pain-stat">
+                <div class="pain-number">30+</div>
+                <div class="pain-label">Disconnected Tools</div>
+            </div>
+            <div class="pain-stat">
+                <div class="pain-number">40</div>
+                <div class="pain-label">Panes of Glass</div>
+            </div>
+            <div class="pain-arrow">→</div>
+            <div class="pain-solution">One Unified Flight Deck</div>
+        </div>
+
+        <!-- Section Header -->
+        <div class="section-header">
+            <div class="section-title">The Compelling Features</div>
+            <h2 class="section-headline">Frictionless by Design. Compliant by Default. Resilient at Core.</h2>
+        </div>
+
+        <!-- Three Pillars -->
+        <div class="pillars">
+            <!-- Cortex -->
+            <div class="pillar-card cortex">
+                <div class="pillar-header">
+                    <div class="pillar-icon">🧠</div>
+                    <div>
+                        <div class="pillar-name">Cortex</div>
+                        <h3 class="pillar-title">The Unified Flight Deck</h3>
+                        <div class="pillar-subtitle">Single Pane of Glass</div>
+                    </div>
+                </div>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-name">📚 Software Component Catalog</div>
+                        <div class="feature-desc">A centralized, searchable inventory that acts as a single source of truth for every service, API, database, and dependency.</div>
+                        <div class="pain-erased">No more hunting across wikis, repositories, and spreadsheets to find service ownership or documentation.</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-name">📊 Health Scorecards & Trust Signals</div>
+                        <div class="feature-desc">Real-time visibility into the security, compliance, and reliability status of every component.</div>
+                        <div class="pain-erased">Developers instantly see if their service meets production standards. Replaces manual audits and compliance checklists.</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-name">🔭 Global Observability Nexus</div>
+                        <div class="feature-desc">A single view that stitches together logs, metrics, and traces for a given service.</div>
+                        <div class="pain-erased">No more jumping between Splunk, Prometheus, and APM tools to trace requests or validate deployments.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Synapse -->
+            <div class="pillar-card synapse">
+                <div class="pillar-header">
+                    <div class="pillar-icon">⚡</div>
+                    <div>
+                        <div class="pillar-name">Synapse</div>
+                        <h3 class="pillar-title">One-Touch Assembly</h3>
+                        <div class="pillar-subtitle">Eroding Friction</div>
+                    </div>
+                </div>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-name">🛤️ Golden Path Templates</div>
+                        <div class="feature-desc">Pre-configured starter kits for new services with CI/CD, security policies, and deployment infrastructure built-in and secured by default.</div>
+                        <div class="pain-erased">Eliminates days of setup. Developers can provision their environment in minutes, not days.</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-name">🚀 Self-Service Provisioning</div>
+                        <div class="feature-desc">Developers can spin up full, disposable, production-like environments for testing a Pull Request with a single click.</div>
+                        <div class="pain-erased">Eliminates the "ticket and wait" cycle for staging resources.</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-name">🔐 Built-in Security Gates</div>
+                        <div class="feature-desc">Continuous security scanning and policy enforcement (policy-as-code) are automatic within the pipeline and invisible to the developer.</div>
+                        <div class="pain-erased">Security shifts from a late-stage roadblock to an invisible, continuous function of the platform.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Atlas -->
+            <div class="pillar-card atlas">
+                <div class="pillar-header">
+                    <div class="pillar-icon">🌐</div>
+                    <div>
+                        <div class="pillar-name">Atlas</div>
+                        <h3 class="pillar-title">The Invisible Foundation</h3>
+                        <div class="pillar-subtitle">Guaranteed Stability</div>
+                    </div>
+                </div>
+
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <div class="feature-name">🎯 Universal Abstraction</div>
+                        <div class="feature-desc">The platform abstracts away the complexity of disparate infrastructure (on-prem, Azure, AWS) using technologies like Kratix.</div>
+                        <div class="pain-erased">Developers no longer need to be Kubernetes experts or cloud certified. Same simple interface regardless of destination.</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-name">🔄 Automated Rollback/Recovery</div>
+                        <div class="feature-desc">Built-in, automated failover and rapid recovery mechanisms (MTTR &lt;10 min) that developers simply inherit.</div>
+                        <div class="pain-erased">Reduced fear of deployment. Confidence that the system will automatically recover from failure.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vision Banner -->
+        <section class="vision-banner">
+            <p class="vision-quote">
+                The goal is to create a platform that abstracts complexity so developers focus on features, not friction — with fully automated pipelines, policy-as-code guardrails, and resilience built in from day one.
+            </p>
+            <p class="vision-tagline">FRICTIONLESS BY DESIGN • COMPLIANT BY DEFAULT • RESILIENT AT CORE</p>
+        </section>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • EXECUTIVE SUMMARY</p>
+        </footer>
+    </div>
+</body>
+</html>

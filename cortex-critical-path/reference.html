@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference | Cortex.io IDP Implementation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            /* Product Colors - matching roadmap.html */
+            --coder-color: #10b981;
+            --cortex-color: #237cb8;
+            --kratix-color: #8b5cf6;
+            --minimumcd-color: #f59e0b;
+
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            --border-subtle: rgba(187, 187, 187, 0.12);
+            --critical-path: linear-gradient(90deg, #666666, #237cb8, #ff6600);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(35, 124, 184, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 2rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--fiserv-blue);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        h1 span {
+            background: var(--critical-path);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Reference Cards Grid */
+        .reference-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 1000px) {
+            .reference-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .reference-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: slideUp 0.6s ease-out both;
+        }
+
+        .reference-card:nth-child(1) { animation-delay: 0.2s; }
+        .reference-card:nth-child(2) { animation-delay: 0.3s; }
+        .reference-card:nth-child(3) { animation-delay: 0.4s; }
+        .reference-card:nth-child(4) { animation-delay: 0.5s; }
+        .reference-card:nth-child(5) { animation-delay: 0.6s; }
+
+        .reference-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+            border-color: rgba(148, 163, 184, 0.2);
+        }
+
+        .reference-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .reference-card.cortex::before { background: var(--cortex-color); }
+        .reference-card.coder::before { background: var(--coder-color); }
+        .reference-card.kratix::before { background: var(--kratix-color); }
+        .reference-card.platform::before { background: linear-gradient(90deg, var(--cortex-color), var(--kratix-color), var(--coder-color)); }
+        .reference-card.minimumcd::before { background: var(--minimumcd-color); }
+
+        .reference-card.cortex:hover { box-shadow: 0 20px 60px rgba(35, 124, 184, 0.25); }
+        .reference-card.coder:hover { box-shadow: 0 20px 60px rgba(16, 185, 129, 0.2); }
+        .reference-card.kratix:hover { box-shadow: 0 20px 60px rgba(139, 92, 246, 0.25); }
+        .reference-card.platform:hover { box-shadow: 0 20px 60px rgba(139, 92, 246, 0.2); }
+        .reference-card.minimumcd:hover { box-shadow: 0 20px 60px rgba(245, 158, 11, 0.25); }
+
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            flex-shrink: 0;
+        }
+
+        .reference-card.cortex .card-icon { background: rgba(35, 124, 184, 0.2); }
+        .reference-card.coder .card-icon { background: rgba(16, 185, 129, 0.2); }
+        .reference-card.kratix .card-icon { background: rgba(139, 92, 246, 0.2); }
+        .reference-card.platform .card-icon { background: linear-gradient(135deg, rgba(35, 124, 184, 0.2), rgba(139, 92, 246, 0.2)); }
+        .reference-card.minimumcd .card-icon { background: rgba(245, 158, 11, 0.2); }
+
+        .card-type {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            padding: 0.35rem 0.75rem;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-tagline {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+
+        .feature-list li::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-top: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .reference-card.cortex .feature-list li::before { background: var(--cortex-color); }
+        .reference-card.coder .feature-list li::before { background: var(--coder-color); }
+        .reference-card.kratix .feature-list li::before { background: var(--kratix-color); }
+        .reference-card.platform .feature-list li::before { background: var(--cortex-color); }
+        .reference-card.minimumcd .feature-list li::before { background: var(--minimumcd-color); }
+
+        .card-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: auto;
+        }
+
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .card-link:hover {
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--text-primary);
+        }
+
+        .reference-card.cortex .card-link:hover { color: var(--cortex-color); }
+        .reference-card.coder .card-link:hover { color: var(--coder-color); }
+        .reference-card.kratix .card-link:hover { color: var(--kratix-color); }
+        .reference-card.platform .card-link:hover { color: var(--cortex-color); }
+        .reference-card.minimumcd .card-link:hover { color: var(--minimumcd-color); }
+
+        /* Highlight Section */
+        .highlight-section {
+            background: linear-gradient(135deg, rgba(35, 124, 184, 0.1), rgba(255, 102, 0, 0.08));
+            border: 1px solid rgba(35, 124, 184, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-top: 3rem;
+            animation: slideUp 0.6s ease-out 0.6s both;
+        }
+
+        .highlight-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .highlight-text {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .architecture-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .arch-box {
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .arch-box.cortex {
+            background: rgba(35, 124, 184, 0.2);
+            border: 1px solid rgba(35, 124, 184, 0.4);
+            color: var(--cortex-color);
+        }
+
+        .arch-box.coder {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.4);
+            color: var(--coder-color);
+        }
+
+        .arch-box.kratix {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            color: var(--kratix-color);
+        }
+
+        .arch-connector {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            animation: fadeIn 0.8s ease-out 0.8s both;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .reference-card {
+                padding: 1.5rem;
+            }
+
+            .architecture-diagram {
+                flex-direction: column;
+            }
+
+            .arch-connector {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">
+                <span>&larr;</span>
+                <span>Back to Critical Path</span>
+            </a>
+        </nav>
+
+        <header>
+            <div class="logo-badge">PLATFORM REFERENCE</div>
+            <h1>Flight Deck <span>Technology Stack</span></h1>
+            <p class="subtitle">Reference documentation for the core platform products powering the Fiserv Internal Developer Platform</p>
+        </header>
+
+        <div class="reference-grid">
+            <!-- Coder Card -->
+            <div class="reference-card coder">
+                <div class="card-header">
+                    <div class="card-icon">&#128187;</div>
+                    <span class="card-type">Cloud Dev Environment</span>
+                </div>
+                <h2 class="card-title">Coder</h2>
+                <p class="card-tagline">Self-hosted cloud development environments that enable consistent, secure, and instant developer workspaces across any infrastructure.</p>
+
+                <ul class="feature-list">
+                    <li><strong>coderd</strong> &mdash; Central API layer managing dashboard, HTTP API, dev URLs, and agent registration with PostgreSQL state storage</li>
+                    <li><strong>provisionerd</strong> &mdash; Infrastructure provisioning via Terraform with support for multiple daemon instances</li>
+                    <li><strong>Workspaces</strong> &mdash; Collections of cloud resources (VMs, Kubernetes, storage) with persistent and ephemeral resource types</li>
+                    <li><strong>Agents</strong> &mdash; Cross-platform agents providing SSH access, port forwarding, liveness monitoring, and startup automation</li>
+                    <li><strong>Flexible Deployment</strong> &mdash; Bundled or decomposed architecture for latency reduction and horizontal scaling</li>
+                    <li><strong>Enterprise Integrations</strong> &mdash; GitHub Enterprise, GitLab, Bitbucket, JFrog Artifactory, and private registries</li>
+                </ul>
+
+                <div class="card-links">
+                    <a href="https://coder.com/docs/admin/infrastructure/architecture" target="_blank" class="card-link">
+                        <span>&#127959;</span> Architecture
+                    </a>
+                    <a href="https://coder.com/docs" target="_blank" class="card-link">
+                        <span>&#128214;</span> Documentation
+                    </a>
+                    <a href="https://coder.com" target="_blank" class="card-link">
+                        <span>&#127760;</span> Website
+                    </a>
+                </div>
+            </div>
+
+            <!-- Cortex.io Card -->
+            <div class="reference-card cortex">
+                <div class="card-header">
+                    <div class="card-icon">&#129504;</div>
+                    <span class="card-type">Internal Developer Portal</span>
+                </div>
+                <h2 class="card-title">Cortex.io</h2>
+                <p class="card-tagline">AI-powered Internal Developer Portal that helps engineering leaders build organizations that ship reliable, secure, and efficient software, faster.</p>
+
+                <ul class="feature-list">
+                    <li><strong>Service Catalog</strong> &mdash; Centralized metadata for services, APIs, pipelines, and resources with 60+ out-of-box integrations</li>
+                    <li><strong>Scorecards</strong> &mdash; Custom scorecards via CQL to gauge operational readiness, DORA metrics, security compliance, and development maturity</li>
+                    <li><strong>Developer Self-Service</strong> &mdash; Pre-approved templates and composable workflows for autonomous service provisioning</li>
+                    <li><strong>Engineering Intelligence</strong> &mdash; DORA metrics, scorecard trends, and portfolio-level analytics dashboards</li>
+                    <li><strong>Leadership Dashboards</strong> &mdash; Executive reports with initiative tracking and compliance monitoring</li>
+                    <li><strong>AI Integration</strong> &mdash; Compatible with Claude Code, Cursor, VSCode, and AI-powered service ownership prediction</li>
+                </ul>
+
+                <div class="card-links">
+                    <a href="https://www.cortex.io/products/what-is-cortex" target="_blank" class="card-link">
+                        <span>&#127760;</span> Product Overview
+                    </a>
+                    <a href="https://docs.cortex.io" target="_blank" class="card-link">
+                        <span>&#128214;</span> Documentation
+                    </a>
+                    <a href="https://app.demo.cortex.io" target="_blank" class="card-link">
+                        <span>&#128187;</span> Demo Portal
+                    </a>
+                </div>
+            </div>
+
+            <!-- Kratix Card -->
+            <div class="reference-card kratix">
+                <div class="card-header">
+                    <div class="card-icon">&#9881;</div>
+                    <span class="card-type">Platform Orchestrator</span>
+                </div>
+                <h2 class="card-title">Kratix</h2>
+                <p class="card-tagline">Open-source platform orchestrator that enables platform teams to deliver self-service, secure, and scalable platform capabilities as governed APIs.</p>
+
+                <ul class="feature-list">
+                    <li><strong>Promises</strong> &mdash; Declarative contracts defining platform capabilities as self-service APIs with embedded workflows</li>
+                    <li><strong>Self-Service APIs</strong> &mdash; Immediate and autonomous resource provisioning through Promise-defined interfaces</li>
+                    <li><strong>Embedded Workflows</strong> &mdash; Consistent compliance, security, and configuration enforcement within each Promise</li>
+                    <li><strong>Fleet Management</strong> &mdash; Built-in reconciliation keeping resources up-to-date across multi-cluster deployments</li>
+                    <li><strong>Promise SDKs</strong> &mdash; Python and Golang SDKs for rapid Promise development with testing frameworks</li>
+                    <li><strong>Terraform Integration</strong> &mdash; Convert existing Terraform modules to managed services via "kratix init" CLI</li>
+                </ul>
+
+                <div class="card-links">
+                    <a href="https://www.kratix.io/" target="_blank" class="card-link">
+                        <span>&#127760;</span> Website
+                    </a>
+                    <a href="https://docs.kratix.io/" target="_blank" class="card-link">
+                        <span>&#128214;</span> Documentation
+                    </a>
+                    <a href="https://www.syntasso.io/" target="_blank" class="card-link">
+                        <span>&#127970;</span> Syntasso
+                    </a>
+                </div>
+            </div>
+
+            <!-- Platform Engineering Tools Card -->
+            <div class="reference-card platform">
+                <div class="card-header">
+                    <div class="card-icon">&#128736;</div>
+                    <span class="card-type">Tooling Landscape</span>
+                </div>
+                <h2 class="card-title">Platform Engineering Tools</h2>
+                <p class="card-tagline">Comprehensive tooling landscape designed to guide organizations in building Internal Developer Platforms based on analysis of hundreds of enterprise setups.</p>
+
+                <ul class="feature-list">
+                    <li><strong>Developer Control Plane</strong> &mdash; Developer portals, service catalogs, and self-service infrastructure tools</li>
+                    <li><strong>Resource Plane</strong> &mdash; Cloud services, databases, registries, and data management solutions</li>
+                    <li><strong>Integration & Delivery Plane</strong> &mdash; CI/CD pipelines, messaging, and deployment automation (ArgoCD, Atlantis)</li>
+                    <li><strong>Security Plane</strong> &mdash; Container security, ASPM, policy control, and compliance tools (Aqua Security)</li>
+                    <li><strong>Monitoring & Logging Plane</strong> &mdash; Observability and incident management tooling</li>
+                    <li><strong>Community-Driven</strong> &mdash; Continuously updated landscape with tool submission process</li>
+                </ul>
+
+                <div class="card-links">
+                    <a href="https://platformengineering.org/platform-tooling" target="_blank" class="card-link">
+                        <span>&#128736;</span> Tool Landscape
+                    </a>
+                    <a href="https://platformengineering.org" target="_blank" class="card-link">
+                        <span>&#127760;</span> Platform Engineering
+                    </a>
+                    <a href="https://internaldeveloperplatform.org" target="_blank" class="card-link">
+                        <span>&#128214;</span> IDP Reference
+                    </a>
+                </div>
+            </div>
+
+            <!-- Minimum CD Card -->
+            <div class="reference-card minimumcd">
+                <div class="card-header">
+                    <div class="card-icon">&#128640;</div>
+                    <span class="card-type">CD Practices & Standards</span>
+                </div>
+                <h2 class="card-title">Minimum CD</h2>
+                <p class="card-tagline">Community-driven definition of the minimum practices required for Continuous Delivery, with an interactive tool to assess and track adoption of CD capabilities.</p>
+
+                <ul class="feature-list">
+                    <li><strong>Core CD Practices</strong> &mdash; Trunk-based development, continuous integration, automated testing, and build-on-commit fundamentals</li>
+                    <li><strong>Deployment & Release</strong> &mdash; Deployment automation, feature flags, on-demand rollback, and immutable artifacts</li>
+                    <li><strong>Testing Strategy</strong> &mdash; Contract testing, integration testing, security testing, performance testing, and deterministic tests</li>
+                    <li><strong>Infrastructure & Config</strong> &mdash; Infrastructure automation, configuration management, secret management, and ephemeral environments</li>
+                    <li><strong>Observability</strong> &mdash; Telemetry, monitoring & alerting, logging infrastructure, and pipeline visibility</li>
+                    <li><strong>Team Practices</strong> &mdash; Cross-functional product teams, component ownership, stop-the-line culture, and unified backlogs</li>
+                </ul>
+
+                <div class="card-links">
+                    <a href="https://minimumcd.org/" target="_blank" class="card-link">
+                        <span>&#127760;</span> Minimum CD
+                    </a>
+                    <a href="https://practices.minimumcd.org/?adopted=YXBpLW1hbmFnZW1lbnQsYXBwbGljYXRpb24tcGlwZWxpbmUsYXJ0aWZhY3QtcmVwb3NpdG9yeSxhdGRkLGF1dG9tYXRlZC1hcnRpZmFjdC12ZXJzaW9uaW5nLGF1dG9tYXRlZC1kYi1jaGFuZ2VzLGF1dG9tYXRlZC1lbnZpcm9ubWVudC1wcm92aXNpb25pbmcsYXV0b21hdGVkLXRlc3RpbmcsYmVoYXZpb3ItZHJpdmVuLWRldmVsb3BtZW50LGJ1aWxkLWF1dG9tYXRpb24sYnVpbGQtb24tY29tbWl0LGNvbXBsaWFuY2UtdGVzdGluZyxjb21wb25lbnQtb3duZXJzaGlwLGNvbmZpZ3VyYXRpb24tbWFuYWdlbWVudCxjb250aW51b3VzLWludGVncmF0aW9uLGNvbnRpbnVvdXMtdGVzdGluZyxjb250cmFjdC10ZXN0aW5nLGNyb3NzLWZ1bmN0aW9uYWwtcHJvZHVjdC10ZWFtLGN5Y2xlLXRpbWUtdHJhY2tpbmcsZGF0YWJhc2UtbWlncmF0aW9uLXN0cmF0ZWd5LGRlcGVuZGVuY3ktbWFuYWdlbWVudCxkZXBsb3ltZW50LWF1dG9tYXRpb24sZGV0ZXJtaW5pc3RpYy10ZXN0cyxkZXZlbG9wZXItZHJpdmVuLXN1cHBvcnQsZXBoZW1lcmFsLXRlc3QtZW52aXJvbm1lbnRzLGV2b2x1dGlvbmFyeS1jb2RpbmcsZXZvbHV0aW9uYXJ5LWRhdGFiYXNlLGV4cGxvcmF0b3J5LXRlc3RpbmcsZmVhdHVyZS1mbGFncyxmdW5jdGlvbmFsLXRlc3RpbmcsaW1tdXRhYmxlLWFydGlmYWN0LGluZnJhc3RydWN0dXJlLWF1dG9tYXRpb24saW50ZWdyYXRpb24tdGVzdGluZyxsb2dnaW5nLWluZnJhc3RydWN0dXJlLG1vZHVsYXItc3lzdGVtLG1vbml0b3JpbmctYW5kLWFsZXJ0aW5nLG9uLWRlbWFuZC1yb2xsYmFjayxwZXJmb3JtYW5jZS10ZXN0aW5nLHBpcGVsaW5lLXZpc2liaWxpdHkscHJpb3JpdGl6ZWQtZmVhdHVyZXMscHJvZHVjdC1nb2FscyxxdWFsaXR5LWdhdGVzLHJlc2lsaWVuY2UtdGVzdGluZyxzZWNyZXQtbWFuYWdlbWVudCxzZWN1cml0eS10ZXN0aW5nLHNtb2tlLXRlc3Rpbmcsc3RhdGljLWFuYWx5c2lzLHN0b3AtdGhlLWxpbmUsdGVsZW1ldHJ5LW9ic2VydmFiaWxpdHksdGVzdC1kYXRhLW1hbmFnZW1lbnQsdGVzdC1lbnZpcm9ubWVudCx0cnVuay1iYXNlZC1kZXZlbG9wbWVudCx1bmlmaWVkLXRlYW0tYmFja2xvZyx1c2FiaWxpdHktdGVzdGluZyx2ZXJzaW9uLWNvbnRyb2wsdmVyc2lvbmVkLWRhdGFiYXNl" target="_blank" class="card-link">
+                        <span>&#128203;</span> Continuous Delivery Practices
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Architecture Highlight -->
+        <div class="highlight-section">
+            <h3 class="highlight-title">
+                <span>&#9889;</span>
+                Flight Deck Platform Architecture
+            </h3>
+            <p class="highlight-text">
+                The Flight Deck platform integrates three core products to deliver a unified developer experience. <strong>Cortex</strong> serves as the single pane of glass providing visibility, scorecards, and engineering intelligence. <strong>Coder</strong> enables instant, consistent cloud development environments integrated with the service catalog. <strong>Kratix</strong> orchestrates multi-cluster deployments through declarative Promises, delivering golden path infrastructure with Harness CD integration.
+            </p>
+            <div class="architecture-diagram">
+                <div class="arch-box coder">
+                    &#128187; Coder<br><small>Dev Environments</small>
+                </div>
+                <span class="arch-connector">&harr;</span>
+                <div class="arch-box cortex">
+                    &#129504; Cortex<br><small>Developer Portal</small>
+                </div>
+                <span class="arch-connector">&harr;</span>
+                <div class="arch-box kratix">
+                    &#9881; Kratix<br><small>Platform Orchestrator</small>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • PLATFORM REFERENCE</p>
+        </footer>
+    </div>
+</body>
+</html>

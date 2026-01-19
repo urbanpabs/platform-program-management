@@ -1,0 +1,2265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal to Platform Engineering | Critical Path</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Fiserv Brand Colors */
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-dark: #333333;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            /* Applied Theme */
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            --phase-foundation: #666666;
+            --phase-foundation-glow: rgba(102, 102, 102, 0.3);
+            --phase-pov: #237cb8;
+            --phase-pov-glow: rgba(35, 124, 184, 0.35);
+            --phase-pilot: #ff6600;
+            --phase-pilot-glow: rgba(255, 102, 0, 0.3);
+
+            --accent-gold: #ff6600;
+            --accent-purple: #2e8bc9;
+            --border-subtle: rgba(187, 187, 187, 0.12);
+            --critical-path: linear-gradient(90deg, #666666, #237cb8, #ff6600);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(35, 124, 184, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Header */
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 4rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--phase-pov);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        h1 span {
+            background: var(--critical-path);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-dot.foundation { background: var(--phase-foundation); }
+        .legend-dot.pov { background: var(--phase-pov); }
+        .legend-dot.pilot { background: var(--phase-pilot); }
+        .legend-dot.critical {
+            background: var(--critical-path);
+            width: 40px;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        /* Critical Path Line */
+        .critical-path-container {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .critical-path-line {
+            height: 6px;
+            background: var(--bg-card);
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+            margin: 0 4rem;
+        }
+
+        .critical-path-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0%;
+            background: var(--critical-path);
+            border-radius: 3px;
+            animation: pathGrow 2s ease-out 0.5s forwards;
+        }
+
+        @keyframes pathGrow {
+            to { width: 100%; }
+        }
+
+        .path-markers {
+            display: flex;
+            justify-content: space-between;
+            margin: 0 4rem;
+            padding-top: 1rem;
+        }
+
+        .path-marker {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .marker-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid var(--bg-primary);
+            position: relative;
+            top: -1.75rem;
+        }
+
+        .marker-dot.foundation { background: var(--phase-foundation); }
+        .marker-dot.pov { background: var(--phase-pov); }
+        .marker-dot.pilot { background: var(--phase-pilot); }
+
+        .marker-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Phases Grid */
+        .phases {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .phases {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Phase Card */
+        .phase-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: slideUp 0.6s ease-out both;
+        }
+
+        .phase-card:nth-child(1) { animation-delay: 0.3s; }
+        .phase-card:nth-child(2) { animation-delay: 0.5s; }
+        .phase-card:nth-child(3) { animation-delay: 0.7s; }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .phase-card:hover {
+            background: var(--bg-card-hover);
+            transform: translateY(-4px);
+            border-color: rgba(148, 163, 184, 0.2);
+        }
+
+        .phase-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+        }
+
+        .phase-card.foundation::before { background: var(--phase-foundation); }
+        .phase-card.pov::before { background: var(--phase-pov); }
+        .phase-card.pilot::before { background: var(--phase-pilot); }
+
+        .phase-card.foundation:hover { box-shadow: 0 20px 60px var(--phase-foundation-glow); }
+        .phase-card.pov:hover { box-shadow: 0 20px 60px var(--phase-pov-glow); }
+        .phase-card.pilot:hover { box-shadow: 0 20px 60px var(--phase-pilot-glow); }
+
+        .phase-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .phase-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.5rem;
+        }
+
+        .phase-card.foundation .phase-number { color: var(--phase-foundation); }
+        .phase-card.pov .phase-number { color: var(--phase-pov); }
+        .phase-card.pilot .phase-number { color: var(--phase-pilot); }
+
+        .phase-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+
+        .phase-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .phase-card.foundation .phase-icon { background: var(--phase-foundation-glow); }
+        .phase-card.pov .phase-icon { background: var(--phase-pov-glow); }
+        .phase-card.pilot .phase-icon { background: var(--phase-pilot-glow); }
+
+        /* Sections within phase */
+        .phase-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .phase-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 16px;
+            height: 1px;
+            background: var(--text-muted);
+        }
+
+        /* Task Items */
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .task-item:hover {
+            background: rgba(0, 0, 0, 0.3);
+            transform: translateX(4px);
+        }
+
+        .task-icon {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        .task-label {
+            flex: 1;
+        }
+
+        .task-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tag-required {
+            background: rgba(255, 102, 0, 0.2);
+            color: var(--fiserv-orange);
+        }
+
+        .tag-integration {
+            background: rgba(35, 124, 184, 0.2);
+            color: var(--fiserv-blue-light);
+        }
+
+        .tag-deliverable {
+            background: rgba(255, 102, 0, 0.15);
+            color: var(--fiserv-orange-light);
+        }
+
+        /* Tool Grid */
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .tool-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .tool-item:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .tool-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .tool-name {
+            flex: 1;
+        }
+
+        /* Status Checkbox */
+        .status-check {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .status-check.pending {
+            border-color: var(--text-muted);
+            background: transparent;
+        }
+
+        .status-check.pending::after {
+            content: '';
+        }
+
+        .status-check.done {
+            border-color: #22c55e;
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .status-check.done::after {
+            content: '✓';
+            font-weight: 700;
+        }
+
+        .status-check.in-progress {
+            border-color: var(--fiserv-orange);
+            background: rgba(255, 102, 0, 0.2);
+        }
+
+        .status-check.in-progress::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--fiserv-orange);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Task item with status */
+        .task-item .status-check {
+            margin-left: auto;
+        }
+
+        /* Dependency Arrow */
+        .dependency-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 0;
+            color: var(--text-muted);
+        }
+
+        .dependency-indicator svg {
+            width: 24px;
+            height: 24px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(8px); }
+        }
+
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(35, 124, 184, 0.12), rgba(255, 102, 0, 0.1));
+            border: 1px solid rgba(35, 124, 184, 0.25);
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .highlight-box:last-child {
+            margin-bottom: 0;
+        }
+
+        .highlight-box.decision {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(255, 102, 0, 0.12));
+            border: 1px solid rgba(245, 158, 11, 0.35);
+        }
+
+        .highlight-box.decision .highlight-title {
+            color: #f59e0b;
+        }
+
+        .highlight-box.measures {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(35, 124, 184, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .highlight-box.measures .highlight-title {
+            color: #8b5cf6;
+        }
+
+        .highlight-box.success {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(35, 124, 184, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .highlight-box.success .highlight-title {
+            color: #10b981;
+        }
+
+        .highlight-box {
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .highlight-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--phase-pov);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .highlight-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            animation: fadeIn 0.8s ease-out 1s both;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-section-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--fiserv-blue);
+            margin-bottom: 0.75rem;
+        }
+
+        .modal-text {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .modal-steps {
+            list-style: none;
+            counter-reset: step-counter;
+        }
+
+        .modal-steps li {
+            counter-increment: step-counter;
+            padding: 0.75rem 0;
+            padding-left: 2.5rem;
+            position: relative;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .modal-steps li:last-child {
+            border-bottom: none;
+        }
+
+        .modal-steps li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0.75rem;
+            width: 24px;
+            height: 24px;
+            background: var(--fiserv-blue-light);
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Acceptance Criteria List */
+        .modal-criteria {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .modal-criteria li {
+            padding: 0.6rem 0;
+            padding-left: 1.75rem;
+            position: relative;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .modal-criteria li:last-child {
+            border-bottom: none;
+        }
+
+        .modal-criteria li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            top: 0.6rem;
+            color: var(--fiserv-orange);
+            font-size: 1rem;
+        }
+
+        .scenario-tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .scenario-tag.greenfield {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .scenario-tag.brownfield {
+            background: rgba(251, 146, 60, 0.2);
+            color: #fb923c;
+        }
+
+        /* Clickable task item */
+        .task-item.clickable {
+            cursor: pointer;
+        }
+
+        .task-item.clickable:hover {
+            background: rgba(35, 124, 184, 0.15);
+            border-left: 3px solid var(--fiserv-blue);
+            padding-left: calc(1rem - 3px);
+        }
+
+        .task-item.clickable .task-label::after {
+            content: ' →';
+            color: var(--fiserv-blue);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .task-item.clickable:hover .task-label::after {
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .legend {
+                gap: 1rem;
+            }
+
+            .critical-path-line,
+            .path-markers {
+                margin: 0 1rem;
+            }
+
+            .tool-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .phase-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo-badge">HIGH-VELOCITY MULTI-CLOUD PLATFORM</div>
+            <h1>Portal to Platform Engineering <span>Critical Path</span></h1>
+            <p class="subtitle">Build boldly, ship fast, deploy anywhere — with enterprise-grade security and compliance woven into every step</p>
+        </header>
+
+        <!-- Navigation Links - Row 1 -->
+        <div class="nav-bar" style="justify-content: center; gap: 1rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+            <a href="executive-summary.html" class="nav-btn">
+                <span>📊</span>
+                <span>Executive Summary</span>
+                <span>→</span>
+            </a>
+            <a href="capabilities.html" class="nav-btn">
+                <span>🛠️</span>
+                <span>Capabilities</span>
+                <span>→</span>
+            </a>
+            <a href="stakeholders.html" class="nav-btn">
+                <span>👥</span>
+                <span>Stakeholders</span>
+                <span>→</span>
+            </a>
+            <a href="communications.html" class="nav-btn">
+                <span>📣</span>
+                <span>Communications</span>
+                <span>→</span>
+            </a>
+            <a href="roadmap.html" class="nav-btn">
+                <span>🗺️</span>
+                <span>Roadmap</span>
+                <span>→</span>
+            </a>
+            <a href="risks.html" class="nav-btn">
+                <span>⚠️</span>
+                <span>Risks</span>
+                <span>→</span>
+            </a>
+            <a href="release-notes.html" class="nav-btn">
+                <span>📝</span>
+                <span>Release Notes</span>
+                <span>→</span>
+            </a>
+            <a href="reference.html" class="nav-btn">
+                <span>📚</span>
+                <span>Reference</span>
+                <span>→</span>
+            </a>
+        </div>
+
+        <!-- Navigation Links - Row 2 -->
+        <div class="nav-bar" style="justify-content: center; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            <a href="policy-as-code.html" class="nav-btn">
+                <span>📜</span>
+                <span>Policy-as-Code</span>
+                <span>→</span>
+            </a>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot foundation"></div>
+                <span>Phase 0: Prerequisites</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot pov"></div>
+                <span>Phase 1: PoV Workshop</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot pilot"></div>
+                <span>Phase 2: Pilot</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot critical"></div>
+                <span>Critical Path</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-check pending" style="width:14px;height:14px;"></span>
+                <span>Pending</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-check done" style="width:14px;height:14px;"></span>
+                <span>Complete</span>
+            </div>
+        </div>
+
+        <!-- Critical Path Timeline -->
+        <div class="critical-path-container">
+            <div class="critical-path-line">
+                <div class="critical-path-progress"></div>
+            </div>
+            <div class="path-markers">
+                <div class="path-marker">
+                    <div class="marker-dot foundation"></div>
+                    <span class="marker-label">Foundation</span>
+                </div>
+                <div class="path-marker">
+                    <div class="marker-dot pov"></div>
+                    <span class="marker-label">PoV Workshop</span>
+                </div>
+                <div class="path-marker">
+                    <div class="marker-dot pilot"></div>
+                    <span class="marker-label">Production Pilot</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Phase Cards -->
+        <div class="phases">
+            <!-- Phase 0: Prerequisites -->
+            <div class="phase-card foundation">
+                <div class="phase-header">
+                    <div>
+                        <div class="phase-number">Phase 0</div>
+                        <h2 class="phase-title">Prerequisites</h2>
+                    </div>
+                    <div class="phase-icon">🔧</div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Contract</div>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <span class="task-icon">📋</span>
+                            <span class="task-label">VEQ</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check done"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">☁️</span>
+                            <span class="task-label">SaaS Review</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">🤖</span>
+                            <span class="task-label">AI Review</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">🛒</span>
+                            <span class="task-label">Purchase Request</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check done"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">📄</span>
+                            <span class="task-label">MSA</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">✍️</span>
+                            <span class="task-label">Contract Executed</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Infrastructure Setup</div>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <span class="task-icon">📡</span>
+                            <span class="task-label">Install Axion Relay</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check done"></span>
+                        </div>
+                        <div class="task-item clickable" onclick="openModal('network')">
+                            <span class="task-icon">🌐</span>
+                            <span class="task-label">Network & Connectivity Setup</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">🎯</span>
+                            <span class="task-label">Install Cortex.io App — Local Sandbox</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check done"></span>
+                        </div>
+                        <div class="task-item clickable" onclick="openModal('prodsaas')">
+                            <span class="task-icon">☁️</span>
+                            <span class="task-label">Install Cortex.io App — Production SaaS</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Platform Orchestration</div>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <span class="task-icon">⚙️</span>
+                            <span class="task-label">Kratix Integration with Harness</span>
+                            <span class="task-tag tag-integration">CD Pipeline</span>
+                            <span class="status-check done"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">☸️</span>
+                            <span class="task-label">AKS Cluster Deployment</span>
+                            <span class="task-tag tag-integration">Azure</span>
+                            <span class="status-check done"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">📜</span>
+                            <span class="task-label">Kratix Promise — Known Namespace</span>
+                            <span class="task-tag tag-deliverable">AKS</span>
+                            <span class="status-check done"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">📜</span>
+                            <span class="task-label">Kratix Promise — Unknown Namespace</span>
+                            <span class="task-tag tag-deliverable">AKS</span>
+                            <span class="status-check done"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Development Environment</div>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <span class="task-icon">💻</span>
+                            <span class="task-label">Coder — Cloud Dev Environment</span>
+                            <span class="task-tag tag-integration">CDE</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">🔗</span>
+                            <span class="task-label">Coder + Cortex.io Integration</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">🛠️</span>
+                            <span class="task-label">CI Build Tools & Dependencies</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Data Ingestion — CI/CD/CV Tools</div>
+                    <div class="tool-grid">
+                        <div class="tool-item">
+                            <span class="tool-icon">🐙</span>
+                            <span class="tool-name">GitHub</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">🦊</span>
+                            <span class="tool-name">GitLab</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">📦</span>
+                            <span class="tool-name">Nexus</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">🛡️</span>
+                            <span class="tool-name">Fortify</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">🔍</span>
+                            <span class="tool-name">Sonatype</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">🚀</span>
+                            <span class="tool-name">Harness</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">📊</span>
+                            <span class="tool-name">SonarQube</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">📈</span>
+                            <span class="tool-name">Dynatrace</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">🔎</span>
+                            <span class="tool-name">Splunk</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">🎫</span>
+                            <span class="tool-name">ServiceNow</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="tool-item">
+                            <span class="tool-icon">🗄️</span>
+                            <span class="tool-name">KatanaDB</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <div class="highlight-title">
+                        <span>⚡</span> Gateway to Success
+                    </div>
+                    <p class="highlight-text">All prerequisites must be completed before PoV Workshop can commence</p>
+                </div>
+            </div>
+
+            <!-- Phase 1: PoV Workshop -->
+            <div class="phase-card pov">
+                <div class="phase-header">
+                    <div>
+                        <div class="phase-number">Phase 1</div>
+                        <h2 class="phase-title">PoV Workshop</h2>
+                    </div>
+                    <div class="phase-icon">🎯</div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Production Deployment</div>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <span class="task-icon">☕</span>
+                            <span class="task-label">Java/SpringBoot Demo App</span>
+                            <span class="task-tag tag-integration">Simulated</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item clickable" onclick="openModal('onetouch')">
+                            <span class="task-icon">🚀</span>
+                            <span class="task-label">One-Touch Assembly → Launch Control & Verify</span>
+                            <span class="task-tag tag-integration">Workflow</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Data Foundation</div>
+                    <div class="task-list">
+                        <div class="task-item clickable" onclick="openModal('datamapping')">
+                            <span class="task-icon">🔗</span>
+                            <span class="task-label">Data Ingestion & Mapping</span>
+                            <span class="task-tag tag-required">Critical</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Test Scenarios</div>
+                    <div class="task-list">
+                        <div class="task-item clickable" onclick="openModal('greenfield')">
+                            <span class="task-icon">🌱</span>
+                            <span class="task-label">Greenfield Test</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item clickable" onclick="openModal('brownfield')">
+                            <span class="task-icon">🏭</span>
+                            <span class="task-label">Brownfield Test</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Deliverables</div>
+                    <div class="task-list">
+                        <div class="task-item clickable" onclick="openModal('scorecards')">
+                            <span class="task-icon">📊</span>
+                            <span class="task-label">Scorecards</span>
+                            <span class="task-tag tag-deliverable">Output</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item clickable" onclick="openModal('insights')">
+                            <span class="task-icon">📈</span>
+                            <span class="task-label">Engineering Intelligence</span>
+                            <span class="task-tag tag-deliverable">Output</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item clickable" onclick="openModal('dashboards')">
+                            <span class="task-icon">📋</span>
+                            <span class="task-label">Leadership Dashboards</span>
+                            <span class="task-tag tag-deliverable">Output</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box success">
+                    <div class="highlight-title">
+                        <span>🎯</span> Success Criteria
+                    </div>
+                    <p class="highlight-text">Effectively manage stakeholder expectations while gaining confidence that our vendor products and interactions can deliver on our platform vision</p>
+                </div>
+
+                <div class="highlight-box measures clickable" onclick="openModal('measures')">
+                    <div class="highlight-title">
+                        <span>📏</span> Measures of Success
+                        <span style="margin-left: auto; font-size: 0.75rem; opacity: 0.7;">Click for details →</span>
+                    </div>
+                    <p class="highlight-text">Empirical evaluation criteria — observable, measurable outcomes that validate platform capabilities against defined acceptance thresholds</p>
+                </div>
+            </div>
+
+            <!-- Phase 2: Pilot -->
+            <div class="phase-card pilot">
+                <div class="phase-header">
+                    <div>
+                        <div class="phase-number">Phase 2</div>
+                        <h2 class="phase-title">Production Pilot</h2>
+                    </div>
+                    <div class="phase-icon">🚀</div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Production Deployment</div>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <span class="task-icon">☕</span>
+                            <span class="task-label">Real Java Application</span>
+                            <span class="task-tag tag-required">Production</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">☸️</span>
+                            <span class="task-label">EKS Cluster Deployment</span>
+                            <span class="task-tag tag-integration">AWS</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Integration Requirements</div>
+                    <div class="task-list">
+                        <div class="task-item">
+                            <span class="task-icon">✅</span>
+                            <span class="task-label">Complete All Integrations</span>
+                            <span class="task-tag tag-required">Required</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                        <div class="task-item">
+                            <span class="task-icon">📜</span>
+                            <span class="task-label">Kratix Promises for EKS</span>
+                            <span class="task-tag tag-integration">New Pathway</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Scorecard Configuration</div>
+                    <div class="task-list">
+                        <div class="task-item clickable" onclick="openModal('maturity')">
+                            <span class="task-icon">🏅</span>
+                            <span class="task-label">Configure Bronze / Silver / Gold Maturity Levels</span>
+                            <span class="task-tag tag-deliverable">Scorecards</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="phase-section">
+                    <div class="section-title">Developer Experience</div>
+                    <div class="task-list">
+                        <div class="task-item clickable" onclick="openModal('getdx')">
+                            <span class="task-icon">📊</span>
+                            <span class="task-label">GetDX Survey — Pilot Group & Scale to MC-2</span>
+                            <span class="task-tag tag-deliverable" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">Baseline: 77</span>
+                            <span class="status-check pending"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="highlight-box">
+                    <div class="highlight-title">
+                        <span>🎯</span> Success Criteria
+                    </div>
+                    <p class="highlight-text">Full end-to-end deployment with validated scorecards, insights, and dashboards reflecting production state</p>
+                </div>
+
+                <div class="highlight-box decision">
+                    <div class="highlight-title">
+                        <span>⚡</span> Decision Point
+                    </div>
+                    <p class="highlight-text">Scale up Cortex licensing upon successful pilot — production validation triggers procurement expansion for broader organizational rollout</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • CRITICAL PATH</p>
+        </footer>
+    </div>
+
+    <!-- Greenfield Modal -->
+    <div class="modal-overlay" id="greenfield-modal" onclick="closeModal(event, 'greenfield')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>🌱</span>
+                    Greenfield Test Scenario
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'greenfield')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag greenfield">New Project Deployment</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">What You're Testing</div>
+                    <p class="modal-text">
+                        This scenario simulates deploying a brand new Java/SpringBoot application from scratch — like starting a fresh project with no existing infrastructure or dependencies to worry about.
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">As a Developer, You Will</div>
+                    <ol class="modal-steps">
+                        <li>Create a new service catalog entry in Cortex.io for your application</li>
+                        <li>Configure your repository (GitHub/GitLab) with the standard CI/CD pipeline templates</li>
+                        <li>Submit a deployment request through Kratix — the platform will automatically provision your namespace on AKS</li>
+                        <li>Watch Harness pick up your deployment and push your SpringBoot app to the cluster</li>
+                        <li>Verify your app appears in Cortex with proper scorecards showing build status, security scans (Fortify/Sonatype), and code quality (SonarQube)</li>
+                        <li>Confirm the Leadership Dashboard reflects your new service in the portfolio view</li>
+                    </ol>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Success Looks Like</div>
+                    <p class="modal-text">
+                        Your new app is running on AKS, fully visible in Cortex.io with all integrations working — scorecards populate automatically, engineering insights show your DORA metrics, and leadership can see the new service in their dashboards. Zero manual configuration required beyond your initial request.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- One-Touch Assembly & Launch Control Modal -->
+    <div class="modal-overlay" id="onetouch-modal" onclick="closeModal(event, 'onetouch')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>🚀</span>
+                    One-Touch Assembly → Launch Control & Verify
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'onetouch')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag greenfield">Platform Engineering Workflow</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Platform Engineer User Story</div>
+                    <p class="modal-text" style="font-style: italic; border-left: 3px solid var(--fiserv-orange); padding-left: 1rem;">
+                        "As a <strong>Platform Engineer</strong>, I want to construct One-Touch Assembly and Launch Control & Verify workflows, so that we can create our first entries into the service catalog and validate our data mappings workflow through scoring."
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">One-Touch Assembly</div>
+                    <p class="modal-text" style="margin-bottom: 0.75rem;">
+                        Automated service onboarding workflow using Cortex's drag-and-drop block orchestrator with 200+ integration-aware components.
+                    </p>
+                    <ol class="modal-steps">
+                        <li><strong>User Input Block</strong> — Collect service metadata (name, team, domain, owner, GitHub username) via form inputs</li>
+                        <li><strong>Scaffolder Block</strong> — Generate repository from Cookiecutter templates with boilerplate, CI/CD configs, and cortex.yaml descriptor</li>
+                        <li><strong>GitHub/GitLab Block</strong> — Create repository, configure branch protection, add team permissions, trigger initial workflow</li>
+                        <li><strong>Harness Block</strong> — Provision CI/CD pipeline from template, configure deployment stages and environments</li>
+                        <li><strong>PagerDuty Block</strong> — Create service entry, assign escalation policy, link to Cortex entity</li>
+                        <li><strong>Jira Block</strong> — Create project board, link work items to service for initiative tracking</li>
+                    </ol>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Launch Control & Verify</div>
+                    <p class="modal-text" style="margin-bottom: 0.75rem;">
+                        Validation workflow with manual approval gates ensuring data flows correctly through to scoring.
+                    </p>
+                    <ol class="modal-steps">
+                        <li><strong>Branch Block</strong> — Conditional paths based on service type (greenfield vs brownfield) using CEL expressions</li>
+                        <li><strong>Jenkins/Harness Block</strong> — Trigger CI build pipeline, run security scans (Fortify, Sonatype, SonarQube)</li>
+                        <li><strong>Manual Approval Block</strong> — Require sign-off from Platform Engineer before scorecard evaluation</li>
+                        <li><strong>Scorecard Trigger</strong> — Execute CQL rules against live integration data, validate Bronze level achievement</li>
+                        <li><strong>Slack Block</strong> — Send notification with score results, link to service catalog entry</li>
+                        <li><strong>ServiceNow Block</strong> — Create change record documenting service onboarding completion</li>
+                    </ol>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Acceptance Criteria</div>
+                    <ul class="modal-criteria">
+                        <li>One-Touch Assembly workflow successfully creates service catalog entry</li>
+                        <li>All integration data points populate correctly in service entity</li>
+                        <li>Launch Control executes scorecard evaluation without errors</li>
+                        <li>Verify workflow confirms data mappings are accurate</li>
+                        <li>Service achieves expected Bronze level score based on current CI/CD state</li>
+                        <li>Workflow is repeatable and documented for future service onboarding</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Reference</div>
+                    <p class="modal-text">
+                        <a href="https://app.demo.cortex.io/admin/workflows" target="_blank" style="color: var(--fiserv-blue); text-decoration: none;">
+                            🔗 Cortex.io Workflows →
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Brownfield Modal -->
+    <div class="modal-overlay" id="brownfield-modal" onclick="closeModal(event, 'brownfield')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>🏭</span>
+                    Brownfield Test Scenario
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'brownfield')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag brownfield">Existing Application Migration</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">What You're Testing</div>
+                    <p class="modal-text">
+                        This scenario simulates onboarding an existing Java/SpringBoot application that's already running somewhere — like migrating a legacy app or bringing an existing service under the new platform's management.
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">As a Developer, You Will</div>
+                    <ol class="modal-steps">
+                        <li>Register your existing application in Cortex.io — point it to your current repository and existing deployment</li>
+                        <li>Connect your existing CI/CD pipelines (already in Harness) to the Kratix workflow</li>
+                        <li>Map your current namespace to Kratix's known namespace promise — no disruption to running services</li>
+                        <li>Backfill historical data by ensuring all integrations (Fortify scans, Sonatype reports, SonarQube analysis) flow into Cortex</li>
+                        <li>Validate that your existing app's metrics and health data appear correctly in scorecards</li>
+                        <li>Verify engineering insights capture your deployment history and incident patterns</li>
+                    </ol>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Success Looks Like</div>
+                    <p class="modal-text">
+                        Your existing app continues running without downtime while now being fully managed by the platform. Cortex.io shows accurate data from your historical CI/CD runs, security scans populate from past Fortify/Sonatype results, and your team can finally see a unified view of all their services — both old and new — in one place.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scorecards Modal -->
+    <div class="modal-overlay" id="scorecards-modal" onclick="closeModal(event, 'scorecards')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📊</span>
+                    Scorecards Deliverable
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'scorecards')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag greenfield">Production Readiness Validation</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Developer User Story</div>
+                    <p class="modal-text" style="font-style: italic; border-left: 3px solid var(--fiserv-blue); padding-left: 1rem;">
+                        "As a <strong>Developer</strong>, I want to know that my code commit passed through and scored with the production readiness pipeline, so that I have confidence my changes meet our organization's quality and security standards before deployment."
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Scorecards to Validate</div>
+                    <ol class="modal-steps">
+                        <li><strong>Production Readiness</strong> — Validates the service meets deployment criteria including documentation, ownership, and operational requirements</li>
+                        <li><strong>Onboarding Scorecard</strong> — Ensures new services complete all required onboarding steps and configurations</li>
+                        <li><strong>Security Standards</strong> — Confirms Fortify SAST scans pass, Sonatype dependency checks clear, and security policies are met</li>
+                        <li><strong>Service Maturity</strong> — Measures the overall maturity of the service across observability, reliability, and documentation</li>
+                        <li><strong>Velocity Scorecard</strong> — Tracks DORA metrics including deployment frequency, lead time, and change failure rate</li>
+                    </ol>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Platform Engineer User Story</div>
+                    <p class="modal-text" style="font-style: italic; border-left: 3px solid var(--fiserv-orange); padding-left: 1rem;">
+                        "As a <strong>Platform Engineer</strong>, I want to construct a custom Production Readiness scorecard via CQL (Cortex Query Language) that the PoV successfully scores as <strong>Bronze level</strong>, so that we can emulate our current state of capabilities in our CI/CD/CV pipelines and establish a baseline for improvement."
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Acceptance Criteria</div>
+                    <ul class="modal-criteria">
+                        <li>Demo app appears in Cortex.io service catalog</li>
+                        <li>All five scorecards display accurate, real-time data from integrated tools</li>
+                        <li>Custom CQL-based Production Readiness scorecard is created and functional</li>
+                        <li>Demo app achieves Bronze level on the custom scorecard</li>
+                        <li>Scorecard results reflect actual CI/CD pipeline execution data</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Reference</div>
+                    <p class="modal-text">
+                        <a href="https://app.demo.cortex.io/admin/scorecards" target="_blank" style="color: var(--fiserv-blue); text-decoration: none;">
+                            🔗 Cortex.io Scorecards Dashboard →
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Engineering Intelligence Modal -->
+    <div class="modal-overlay" id="insights-modal" onclick="closeModal(event, 'insights')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📈</span>
+                    Engineering Intelligence Deliverable
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'insights')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag greenfield">Data-Driven Engineering Visibility</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Engineering Manager User Story</div>
+                    <p class="modal-text" style="font-style: italic; border-left: 3px solid var(--fiserv-blue); padding-left: 1rem;">
+                        "As an <strong>Engineering Manager</strong>, I want to see aggregated intelligence across my team's services, so that I can identify technical debt, track improvement trends, and make data-driven decisions about where to invest engineering effort."
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Intelligence to Validate</div>
+                    <ol class="modal-steps">
+                        <li><strong>DORA Metrics</strong> — Deployment frequency, lead time for changes, change failure rate, and mean time to restore via Harness integration</li>
+                        <li><strong>Scorecard Trends</strong> — Track scorecard level progression (Bronze/Silver/Gold) across services and teams over time</li>
+                        <li><strong>Service Catalog Analytics</strong> — Visibility into service ownership, team coverage, and catalog completeness</li>
+                        <li><strong>Initiative Progress</strong> — Track organizational initiatives and goals across the service portfolio</li>
+                        <li><strong>Team & Domain Insights</strong> — Aggregated views of engineering health by team, domain, or business unit</li>
+                        <li><strong>Custom Dashboards</strong> — Ability to create and configure custom dashboard views for specific use cases</li>
+                    </ol>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Acceptance Criteria</div>
+                    <ul class="modal-criteria">
+                        <li>Engineering Intelligence Dashboard displays data from demo app deployment</li>
+                        <li>DORA metrics reflect actual Harness deployment pipeline data</li>
+                        <li>Scorecard trends show progression over the PoV period</li>
+                        <li>Service catalog accurately reflects demo app metadata and ownership</li>
+                        <li>Team/domain aggregations correctly group services</li>
+                        <li>Custom dashboard views can be created and saved</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Reference</div>
+                    <p class="modal-text">
+                        <a href="https://app.demo.cortex.io/admin/eng-intelligence/dashboards" target="_blank" style="color: var(--fiserv-blue); text-decoration: none;">
+                            🔗 Cortex.io Engineering Intelligence Dashboards →
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leadership Dashboards Modal -->
+    <div class="modal-overlay" id="dashboards-modal" onclick="closeModal(event, 'dashboards')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📋</span>
+                    Leadership Dashboards Deliverable
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'dashboards')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag brownfield">Executive Portfolio Visibility</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Executive User Story</div>
+                    <p class="modal-text" style="font-style: italic; border-left: 3px solid var(--fiserv-blue); padding-left: 1rem;">
+                        "As an <strong>Engineering Director</strong>, I want a portfolio-level view of all services and their production readiness status, so that I can understand organizational risk, track compliance across teams, and report on engineering health to leadership."
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Executive Reports to Validate</div>
+                    <ol class="modal-steps">
+                        <li><strong>Portfolio Overview</strong> — High-level view of all services with scorecard status (Bronze/Silver/Gold) distribution</li>
+                        <li><strong>Risk & Compliance</strong> — Services failing security standards, overdue reviews, or missing critical metadata</li>
+                        <li><strong>Team Performance</strong> — Comparative view of scorecard achievements across different teams/domains</li>
+                        <li><strong>Trend Analysis</strong> — Historical view showing improvement or regression in production readiness over time</li>
+                        <li><strong>Initiative Tracking</strong> — Progress toward organizational goals and compliance targets</li>
+                    </ol>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Initiatives to Configure & Track</div>
+                    <ol class="modal-steps">
+                        <li><strong>Marshall Plan</strong> — Track services with code quality coverage &lt;80% and drive improvement toward compliance threshold</li>
+                        <li><strong>AppSec SCM Policy Compliance</strong> — Monitor Enterprise Git (GitHub/GitLab) security policy adherence across all repositories</li>
+                    </ol>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Platform Engineer User Story</div>
+                    <p class="modal-text" style="font-style: italic; border-left: 3px solid var(--fiserv-orange); padding-left: 1rem;">
+                        "As a <strong>Platform Engineer</strong>, I want to configure executive reports and initiative tracking that surface the right level of detail for leadership, so that they can make informed decisions and track progress toward organizational goals."
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Acceptance Criteria</div>
+                    <ul class="modal-criteria">
+                        <li>Executive Reports dashboard shows demo app in portfolio view</li>
+                        <li>Scorecard level (Bronze) is visible at portfolio level</li>
+                        <li>Dashboard correctly categorizes service by team/domain</li>
+                        <li>Drill-down capability from portfolio to individual service works</li>
+                        <li>Marshall Plan initiative configured and tracking code quality &lt;80%</li>
+                        <li>AppSec SCM Policy initiative configured for GitHub/GitLab compliance</li>
+                        <li>Initiative progress accurately reflects demo app compliance status</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Reference</div>
+                    <p class="modal-text">
+                        <a href="https://app.demo.cortex.io/admin/reports/executive" target="_blank" style="color: var(--fiserv-blue); text-decoration: none;">
+                            🔗 Cortex.io Executive Reports →
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network & Connectivity Modal -->
+    <div class="modal-overlay" id="network-modal" onclick="closeModal(event, 'network')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>🌐</span>
+                    Network & Connectivity Setup
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'network')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag greenfield">Tufin Firewall Rules</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Overview</div>
+                    <p class="modal-text">
+                        Track the completion of Tufin firewall rule requests for each tool integration. All rules must be approved and implemented before data can flow between on-premises systems and SaaS platforms via Axion Relay.
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Platform Products</div>
+                    <ul class="modal-criteria">
+                        <li>Cortex.io — Axion Relay outbound connectivity</li>
+                        <li>Coder — Cloud Dev Environment network access</li>
+                        <li>Kratix — Platform API & cluster communication</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Source Control</div>
+                    <ul class="modal-criteria">
+                        <li>GitHub — API access for repository data ingestion</li>
+                        <li>GitLab — API access for repository data ingestion</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">CI/CD Pipeline</div>
+                    <ul class="modal-criteria">
+                        <li>Harness — Pipeline execution & deployment data</li>
+                        <li>Nexus — Artifact repository connectivity</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Security & Code Quality</div>
+                    <ul class="modal-criteria">
+                        <li>Fortify — SAST scan results ingestion</li>
+                        <li>Sonatype — SCA dependency analysis data</li>
+                        <li>SonarQube — Code quality metrics</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Observability & Operations</div>
+                    <ul class="modal-criteria">
+                        <li>Dynatrace — APM metrics & traces</li>
+                        <li>Splunk — Log analytics data</li>
+                        <li>ServiceNow — ITSM integration</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Database</div>
+                    <ul class="modal-criteria">
+                        <li>KatanaDB — Database management connectivity</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Process</div>
+                    <p class="modal-text">
+                        For each tool: Submit Tufin request → Security review → Approval → Implementation → Validation testing
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- GetDX Survey Modal -->
+    <div class="modal-overlay" id="getdx-modal" onclick="closeModal(event, 'getdx')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📊</span>
+                    GetDX Developer Experience Survey
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'getdx')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag greenfield" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.3);">Baseline Score: 77</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Overview</div>
+                    <p class="modal-text">
+                        Measure developer experience impact of the IDP implementation using GetDX surveys. The baseline score of <strong style="color: #10b981;">77</strong> establishes our starting point for tracking improvements as platform capabilities are rolled out.
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Survey Phases</div>
+                    <ul class="modal-criteria">
+                        <li><strong>Phase 1: Pilot Group</strong> — Survey developers participating in Production Pilot</li>
+                        <li><strong>Phase 2: App Owners</strong> — Expand survey to application owners onboarding to platform</li>
+                        <li><strong>Phase 3: Scale to MC-2</strong> — Full rollout across MC-2 organization</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Key Metrics to Track</div>
+                    <ul class="modal-criteria">
+                        <li>Overall Developer Experience Score (baseline: 77)</li>
+                        <li>Time to productivity for new developers</li>
+                        <li>Self-service success rate (requests without escalation)</li>
+                        <li>Cognitive load reduction (context switching frequency)</li>
+                        <li>Deployment confidence & frequency</li>
+                        <li>Documentation findability & usefulness</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Success Targets</div>
+                    <ul class="modal-criteria">
+                        <li>Pilot Group — Maintain or improve baseline score</li>
+                        <li>Post-Platform Launch — Target score improvement to 82+</li>
+                        <li>MC-2 Scale — Achieve consistent scores across all teams</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Survey Cadence</div>
+                    <p class="modal-text">
+                        Initial pilot survey → 30-day follow-up → Quarterly pulse checks → Annual comprehensive survey aligned with GetDX benchmarks
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Production SaaS Connectivity Modal -->
+    <div class="modal-overlay" id="prodsaas-modal" onclick="closeModal(event, 'prodsaas')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>☁️</span>
+                    Production SaaS Connectivity
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'prodsaas')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag greenfield">Axion Relay → Cortex.io SaaS</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Overview</div>
+                    <p class="modal-text">
+                        Verify that all firewall rules are in place for Axion Relay to communicate with Cortex.io Production SaaS environment. These rules must be approved and implemented before production deployment can proceed.
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Axion Relay Outbound Connectivity</div>
+                    <ul class="modal-criteria">
+                        <li>Axion Relay → Cortex.io API (api.cortex.io:443)</li>
+                        <li>Axion Relay → Cortex.io Events (events.cortex.io:443)</li>
+                        <li>Axion Relay → Cortex.io Auth (auth.cortex.io:443)</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Data Ingestion Endpoints</div>
+                    <ul class="modal-criteria">
+                        <li>Axion Relay → Cortex.io Catalog Sync (catalog.cortex.io:443)</li>
+                        <li>Axion Relay → Cortex.io Metrics Ingestion (metrics.cortex.io:443)</li>
+                        <li>Axion Relay → Cortex.io Webhook Receiver (webhooks.cortex.io:443)</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Internal Network Requirements</div>
+                    <ul class="modal-criteria">
+                        <li>Axion Relay host → GitHub Enterprise API (internal)</li>
+                        <li>Axion Relay host → GitLab API (internal)</li>
+                        <li>Axion Relay host → Harness API (internal)</li>
+                        <li>Axion Relay host → Dynatrace API (internal)</li>
+                        <li>Axion Relay host → SonarQube API (internal)</li>
+                        <li>Axion Relay host → Fortify API (internal)</li>
+                        <li>Axion Relay host → Sonatype API (internal)</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Tufin Request Status</div>
+                    <ul class="modal-criteria">
+                        <li>Production SaaS outbound rules — Tufin ticket submitted</li>
+                        <li>Security review — Pending approval</li>
+                        <li>Implementation — Awaiting security sign-off</li>
+                        <li>Validation testing — Not started</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Validation Checklist</div>
+                    <p class="modal-text">
+                        After firewall rules are implemented: Test Axion Relay connectivity → Verify API authentication → Confirm data sync → Validate webhook delivery → Production ready ✓
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maturity Levels Modal -->
+    <div class="modal-overlay" id="maturity-modal" onclick="closeModal(event, 'maturity')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>🏅</span>
+                    Scorecard Maturity Levels
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'maturity')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag greenfield">Bronze / Silver / Gold Framework</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Overview</div>
+                    <p class="modal-text">
+                        Define what "good" looks like for service maturity using industry-standard Continuous Delivery practices. Maturity levels are mapped to <a href="https://minimumcd.org/" target="_blank" style="color: var(--fiserv-blue);">Minimum CD</a> practices to ensure alignment with proven engineering excellence standards.
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">🥉 Bronze — Foundation</div>
+                    <p class="modal-text" style="margin-bottom: 0.75rem; color: #cd7f32;">Minimum viable practices for production readiness</p>
+                    <ul class="modal-criteria">
+                        <li>Version Control — Code in source control with branching strategy</li>
+                        <li>Build Automation — Automated build on commit</li>
+                        <li>Automated Testing — Unit tests with minimum coverage threshold</li>
+                        <li>Artifact Repository — Immutable artifacts stored in registry</li>
+                        <li>Deployment Automation — No manual deployment steps</li>
+                        <li>Component Ownership — Defined owner in service catalog</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">🥈 Silver — Intermediate</div>
+                    <p class="modal-text" style="margin-bottom: 0.75rem; color: #c0c0c0;">Enhanced practices for operational excellence</p>
+                    <ul class="modal-criteria">
+                        <li>Continuous Integration — Trunk-based development, frequent commits</li>
+                        <li>Integration Testing — Automated integration & contract tests</li>
+                        <li>Security Testing — SAST/SCA scans in pipeline (Fortify, Sonatype)</li>
+                        <li>Static Analysis — Code quality gates (SonarQube)</li>
+                        <li>Configuration Management — Externalized config, no secrets in code</li>
+                        <li>Monitoring & Alerting — APM instrumentation (Dynatrace)</li>
+                        <li>Pipeline Visibility — Full traceability from commit to deploy</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">🥇 Gold — Advanced</div>
+                    <p class="modal-text" style="margin-bottom: 0.75rem; color: #ffd700;">Elite practices for continuous delivery excellence</p>
+                    <ul class="modal-criteria">
+                        <li>Feature Flags — Progressive rollout capabilities</li>
+                        <li>On-Demand Rollback — Instant revert without redeployment</li>
+                        <li>Performance Testing — Automated load/stress testing</li>
+                        <li>Resilience Testing — Chaos engineering practices</li>
+                        <li>Ephemeral Test Environments — On-demand environment provisioning</li>
+                        <li>Telemetry & Observability — Full distributed tracing</li>
+                        <li>Database Migration Strategy — Automated, versioned schema changes</li>
+                        <li>Compliance Testing — Automated policy validation</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Reference Standards</div>
+                    <p class="modal-text">
+                        <a href="https://practices.minimumcd.org/?adopted=YXBpLW1hbmFnZW1lbnQsYXBwbGljYXRpb24tcGlwZWxpbmUsYXJ0aWZhY3QtcmVwb3NpdG9yeSxhdGRkLGF1dG9tYXRlZC1hcnRpZmFjdC12ZXJzaW9uaW5nLGF1dG9tYXRlZC1kYi1jaGFuZ2VzLGF1dG9tYXRlZC1lbnZpcm9ubWVudC1wcm92aXNpb25pbmcsYXV0b21hdGVkLXRlc3RpbmcsYmVoYXZpb3ItZHJpdmVuLWRldmVsb3BtZW50LGJ1aWxkLWF1dG9tYXRpb24sYnVpbGQtb24tY29tbWl0LGNvbXBsaWFuY2UtdGVzdGluZyxjb21wb25lbnQtb3duZXJzaGlwLGNvbmZpZ3VyYXRpb24tbWFuYWdlbWVudCxjb250aW51b3VzLWludGVncmF0aW9uLGNvbnRpbnVvdXMtdGVzdGluZyxjb250cmFjdC10ZXN0aW5nLGNyb3NzLWZ1bmN0aW9uYWwtcHJvZHVjdC10ZWFtLGN5Y2xlLXRpbWUtdHJhY2tpbmcsZGF0YWJhc2UtbWlncmF0aW9uLXN0cmF0ZWd5LGRlcGVuZGVuY3ktbWFuYWdlbWVudCxkZXBsb3ltZW50LWF1dG9tYXRpb24sZGV0ZXJtaW5pc3RpYy10ZXN0cyxkZXZlbG9wZXItZHJpdmVuLXN1cHBvcnQsZXBoZW1lcmFsLXRlc3QtZW52aXJvbm1lbnRzLGV2b2x1dGlvbmFyeS1jb2RpbmcsZXZvbHV0aW9uYXJ5LWRhdGFiYXNlLGV4cGxvcmF0b3J5LXRlc3RpbmcsZmVhdHVyZS1mbGFncyxmdW5jdGlvbmFsLXRlc3RpbmcsaW1tdXRhYmxlLWFydGlmYWN0LGluZnJhc3RydWN0dXJlLWF1dG9tYXRpb24saW50ZWdyYXRpb24tdGVzdGluZyxsb2dnaW5nLWluZnJhc3RydWN0dXJlLG1vZHVsYXItc3lzdGVtLG1vbml0b3JpbmctYW5kLWFsZXJ0aW5nLG9uLWRlbWFuZC1yb2xsYmFjayxwZXJmb3JtYW5jZS10ZXN0aW5nLHBpcGVsaW5lLXZpc2liaWxpdHkscHJpb3JpdGl6ZWQtZmVhdHVyZXMscHJvZHVjdC1nb2FscyxxdWFsaXR5LWdhdGVzLHJlc2lsaWVuY2UtdGVzdGluZyxzZWNyZXQtbWFuYWdlbWVudCxzZWN1cml0eS10ZXN0aW5nLHNtb2tlLXRlc3Rpbmcsc3RhdGljLWFuYWx5c2lzLHN0b3AtdGhlLWxpbmUsdGVsZW1ldHJ5LW9ic2VydmFiaWxpdHksdGVzdC1kYXRhLW1hbmFnZW1lbnQsdGVzdC1lbnZpcm9ubWVudCx0cnVuay1iYXNlZC1kZXZlbG9wbWVudCx1bmlmaWVkLXRlYW0tYmFja2xvZyx1c2FiaWxpdHktdGVzdGluZyx2ZXJzaW9uLWNvbnRyb2wsdmVyc2lvbmVkLWRhdGFiYXNl" target="_blank" style="color: var(--fiserv-blue); text-decoration: none;">
+                            🔗 View Fiserv Adopted Practices on Minimum CD →
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Measures of Success Modal -->
+    <div class="modal-overlay" id="measures-modal" onclick="closeModal(event, 'measures')">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📏</span>
+                    Measures of Success
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'measures')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <span class="scenario-tag greenfield">Empirical Evaluation Criteria</span>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Overview</div>
+                    <p class="modal-text">
+                        Observable, measurable outcomes that validate platform capabilities against defined acceptance thresholds. These criteria determine PoV Workshop success and inform the decision to proceed to Production Pilot.
+                    </p>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Service Catalog & Data Quality</div>
+                    <ul class="modal-criteria">
+                        <li>100% of test applications registered in catalog with accurate ownership metadata</li>
+                        <li>All configured integrations returning data within expected refresh intervals</li>
+                        <li>Scorecard rules executing correctly against ingested data</li>
+                        <li>No orphaned services — every catalog entry has valid owner assignment</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Developer Experience & Workflow</div>
+                    <ul class="modal-criteria">
+                        <li>Greenfield deployment: Service request → running application in target timeframe</li>
+                        <li>Brownfield onboarding: Existing application cataloged with scorecards populated</li>
+                        <li>Self-service workflow completable without platform team intervention</li>
+                        <li>Developer can locate service documentation and ownership within 60 seconds</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Integration Validation</div>
+                    <ul class="modal-criteria">
+                        <li>GitHub/GitLab — Repository data visible in service catalog</li>
+                        <li>Harness — CI/CD pipeline status reflected in scorecards</li>
+                        <li>Fortify — SAST scan results ingested and scored</li>
+                        <li>Sonatype — SCA dependency analysis data available</li>
+                        <li>Dynatrace — APM metrics feeding into service health indicators</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Platform Orchestration</div>
+                    <ul class="modal-criteria">
+                        <li>Kratix promise successfully provisions AKS namespace on request</li>
+                        <li>Coder workspace spins up with correct tooling pre-configured</li>
+                        <li>End-to-end "One-Touch Assembly" workflow executes without manual steps</li>
+                        <li>Deployment rollback can be triggered through platform interface</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Stakeholder Confidence</div>
+                    <ul class="modal-criteria">
+                        <li>Leadership dashboards display accurate aggregated metrics</li>
+                        <li>Engineering Intelligence reports generate meaningful insights</li>
+                        <li>Demo scenario successfully presented to stakeholder audience</li>
+                        <li>Stakeholders can articulate platform value proposition post-demo</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">Exit Criteria</div>
+                    <p class="modal-text">
+                        PoV Workshop is considered successful when: All critical integrations validated ✓ Both test scenarios (greenfield + brownfield) completed ✓ Scorecards and dashboards populated with accurate data ✓ Stakeholder sign-off obtained ✓
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Ingestion & Mapping Modal -->
+    <div class="modal-overlay" id="datamapping-modal" onclick="closeModal(event, 'datamapping')">
+        <div class="modal" onclick="event.stopPropagation()" style="max-width: 800px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>🔗</span>
+                    Data Ingestion & Mapping
+                </div>
+                <button class="modal-close" onclick="closeModal(event, 'datamapping')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">
+                    Establishing the <strong style="color: var(--fiserv-orange);">Digital Thread</strong> — a continuous through-line that connects a developer's commit to their application running in production. This requires correlating organizational data across multiple dimensions.
+                </p>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">🏢 Org Hierarchy & App Taxonomy</div>
+                    <p class="modal-text" style="margin-bottom: 0.75rem;">
+                        Map the organizational structure to application ownership for accurate rollup reporting.
+                    </p>
+                    <ul class="modal-criteria">
+                        <li><strong>Business Unit → Division → APM → Application Name</strong> hierarchy chain</li>
+                        <li><strong>APM</strong> (Application Portfolio Management) — unique application identifier</li>
+                        <li><strong>MC-1 → MC-2 → MC-3 → Manager</strong> executive hierarchy (Management Committee)</li>
+                        <li><strong>App Owner</strong> — accountable individual for application lifecycle</li>
+                        <li>App metadata: Language, framework, version, deployment target, lifecycle stage</li>
+                        <li>Cost center and budget allocation mapping for chargeback services</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">👥 Team Topologies</div>
+                    <p class="modal-text" style="margin-bottom: 0.75rem;">
+                        Define team structures and ownership boundaries for clear accountability.
+                    </p>
+                    <ul class="modal-criteria">
+                        <li><strong>Stream-aligned teams</strong> — product/feature delivery ownership</li>
+                        <li><strong>Platform teams</strong> — internal platform capabilities</li>
+                        <li><strong>Enabling teams</strong> — coaching and capability uplift</li>
+                        <li><strong>Complicated-subsystem teams</strong> — specialized domain expertise</li>
+                        <li>On-call rotation and escalation paths</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">📦 Repository → Application Mapping</div>
+                    <p class="modal-text" style="margin-bottom: 0.75rem;">
+                        Link source code repositories to the applications they build.
+                    </p>
+                    <ul class="modal-criteria">
+                        <li><strong>Mono-repo vs Multi-repo</strong> — identify repo-to-app cardinality</li>
+                        <li>GitHub/GitLab organization and repo naming conventions</li>
+                        <li>Branch strategy: trunk-based, GitFlow, release branches</li>
+                        <li>CI pipeline association (Harness, Jenkins, GitHub Actions)</li>
+                        <li>Artifact registry mapping (Nexus, Container Registry)</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">🧵 The Digital Thread: Commit → Production</div>
+                    <p class="modal-text" style="margin-bottom: 0.75rem; border-left: 3px solid var(--fiserv-orange); padding-left: 1rem; font-style: italic;">
+                        "Given a single commit SHA, I can trace the path to the container running in production — and given a production incident, I can trace back to the exact commit that caused it."
+                    </p>
+                    <div style="background: rgba(0,0,0,0.2); border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">
+                            <span style="background: var(--phase-pov); padding: 0.25rem 0.5rem; border-radius: 4px;">Commit</span>
+                            <span style="color: var(--text-muted);">→</span>
+                            <span style="background: rgba(245, 158, 11, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px;">Build</span>
+                            <span style="color: var(--text-muted);">→</span>
+                            <span style="background: rgba(139, 92, 246, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px;">Artifact</span>
+                            <span style="color: var(--text-muted);">→</span>
+                            <span style="background: rgba(16, 185, 129, 0.3); padding: 0.25rem 0.5rem; border-radius: 4px;">Deploy</span>
+                            <span style="color: var(--text-muted);">→</span>
+                            <span style="background: var(--fiserv-orange); padding: 0.25rem 0.5rem; border-radius: 4px;">Production</span>
+                        </div>
+                    </div>
+                    <ul class="modal-criteria" style="margin-top: 1rem;">
+                        <li><strong>Commit SHA</strong> → linked to PR, linked to Jira ticket</li>
+                        <li><strong>Build ID</strong> → CI pipeline execution with test results</li>
+                        <li><strong>Artifact Version</strong> → container image tag, Nexus artifact</li>
+                        <li><strong>Deployment ID</strong> → Harness pipeline, Kratix resource request</li>
+                        <li><strong>Runtime Instance</strong> → K8s pod, namespace, cluster, cloud region</li>
+                    </ul>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">📊 Data Sources to Correlate</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem;">
+                        <div style="background: rgba(35, 124, 184, 0.1); border: 1px solid rgba(35, 124, 184, 0.3); border-radius: 6px; padding: 0.75rem;">
+                            <div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Identity & Org</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Active Directory, Workday, ServiceNow CMDB</div>
+                        </div>
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 0.75rem;">
+                            <div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Source Control</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">GitHub, GitLab</div>
+                        </div>
+                        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 6px; padding: 0.75rem;">
+                            <div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">CI/CD Pipeline</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Harness, GitLab CI, GitHub Actions</div>
+                        </div>
+                        <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 6px; padding: 0.75rem;">
+                            <div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Artifact Registry</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Nexus</div>
+                        </div>
+                        <div style="background: rgba(255, 102, 0, 0.1); border: 1px solid rgba(255, 102, 0, 0.3); border-radius: 6px; padding: 0.75rem;">
+                            <div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Runtime & Observability</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">K8s, Dynatrace, Splunk, Grafana</div>
+                        </div>
+                        <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 6px; padding: 0.75rem;">
+                            <div style="font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem;">Security & Compliance</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Fortify, Sonatype, SonarQube, Apiiro, OPA</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">✅ Success Criteria</div>
+                    <ul class="modal-criteria">
+                        <li>Every application in scope has a defined owner (team + individual)</li>
+                        <li>Repository-to-application mapping is complete and validated</li>
+                        <li>CI/CD pipeline traces are linkable to source commits</li>
+                        <li>Production deployments can be traced back to originating commit</li>
+                        <li>Org hierarchy rollups display accurate aggregated metrics</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(type) {
+            const modal = document.getElementById(type + '-modal');
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeModal(event, type) {
+            const modal = document.getElementById(type + '-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+</body>
+</html>

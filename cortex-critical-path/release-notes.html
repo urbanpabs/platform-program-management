@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Notes | Platform as a Product</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Fiserv Brand Colors */
+            --fiserv-blue: #237cb8;
+            --fiserv-blue-light: #2e8bc9;
+            --fiserv-orange: #ff6600;
+            --fiserv-orange-light: #fb6400;
+            --fiserv-black: #0e0e0e;
+            --fiserv-dark: #333333;
+            --fiserv-gray: #666666;
+            --fiserv-gray-light: #909090;
+            --fiserv-silver: #bbbbbb;
+            --fiserv-white: #ffffff;
+
+            /* Applied Theme */
+            --bg-primary: #0e0e0e;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #252525;
+            --bg-card-hover: #2f2f2f;
+
+            --text-primary: #f4f4f4;
+            --text-secondary: #bbbbbb;
+            --text-muted: #909090;
+
+            /* Product Colors */
+            --coder-color: #10b981;
+            --cortex-color: #237cb8;
+            --kratix-color: #8b5cf6;
+
+            /* Release Type Colors */
+            --major-color: #ff6600;
+            --minor-color: #237cb8;
+            --patch-color: #10b981;
+            --milestone-color: #8b5cf6;
+
+            --border-subtle: rgba(187, 187, 187, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Instrument Sans', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Background Pattern */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(35, 124, 184, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 102, 0, 0.08) 0%, transparent 50%),
+                linear-gradient(rgba(102, 102, 102, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(102, 102, 102, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 60px 60px, 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, var(--fiserv-blue), var(--fiserv-orange));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.5rem 1.25rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .logo-badge::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--fiserv-orange);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+        }
+
+        h1 .highlight {
+            background: linear-gradient(90deg, var(--fiserv-blue), var(--fiserv-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+            animation: fadeIn 0.8s ease-out 0.2s both;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-dot.major { background: var(--major-color); }
+        .legend-dot.minor { background: var(--minor-color); }
+        .legend-dot.patch { background: var(--patch-color); }
+        .legend-dot.milestone { background: var(--milestone-color); }
+
+        /* Cadence Info */
+        .cadence-info {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            animation: slideUp 0.6s ease-out 0.2s both;
+        }
+
+        .cadence-item {
+            text-align: center;
+        }
+
+        .cadence-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .cadence-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .cadence-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Release Timeline */
+        .releases-container {
+            position: relative;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 140px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg, var(--milestone-color), var(--major-color), var(--minor-color), var(--patch-color));
+            border-radius: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .timeline-line {
+                left: 20px;
+            }
+        }
+
+        /* Phase Section */
+        .phase-section {
+            margin-bottom: 3rem;
+            animation: slideUp 0.6s ease-out both;
+        }
+
+        .phase-section:nth-child(1) { animation-delay: 0.3s; }
+        .phase-section:nth-child(2) { animation-delay: 0.4s; }
+        .phase-section:nth-child(3) { animation-delay: 0.5s; }
+        .phase-section:nth-child(4) { animation-delay: 0.6s; }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-left: 160px;
+        }
+
+        @media (max-width: 768px) {
+            .phase-header {
+                padding-left: 40px;
+            }
+        }
+
+        .phase-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .phase-badge.phase-0 {
+            background: rgba(102, 102, 102, 0.3);
+            color: #999;
+        }
+        .phase-badge.phase-1 {
+            background: rgba(35, 124, 184, 0.2);
+            color: var(--fiserv-blue);
+        }
+        .phase-badge.phase-2 {
+            background: rgba(255, 102, 0, 0.2);
+            color: var(--fiserv-orange);
+        }
+        .phase-badge.scale {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--coder-color);
+        }
+
+        .phase-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        /* Release Card */
+        .release-card {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .release-meta {
+            width: 120px;
+            flex-shrink: 0;
+            text-align: right;
+            padding-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .release-card {
+                flex-direction: column;
+                padding-left: 40px;
+            }
+            .release-meta {
+                width: auto;
+                text-align: left;
+                padding-top: 0;
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+            }
+        }
+
+        .release-version {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .release-card.major .release-version { color: var(--major-color); }
+        .release-card.minor .release-version { color: var(--minor-color); }
+        .release-card.patch .release-version { color: var(--patch-color); }
+        .release-card.milestone .release-version { color: var(--milestone-color); }
+
+        .release-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .release-marker {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 1rem;
+            border: 3px solid var(--bg-primary);
+            position: relative;
+            z-index: 1;
+        }
+
+        .release-card.major .release-marker { background: var(--major-color); }
+        .release-card.minor .release-marker { background: var(--minor-color); }
+        .release-card.patch .release-marker { background: var(--patch-color); }
+        .release-card.milestone .release-marker { background: var(--milestone-color); }
+
+        @media (max-width: 768px) {
+            .release-marker {
+                position: absolute;
+                left: 11px;
+                top: 0;
+            }
+        }
+
+        .release-content {
+            flex: 1;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .release-content:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .release-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .release-type {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .release-card.major .release-type {
+            background: rgba(255, 102, 0, 0.2);
+            color: var(--major-color);
+        }
+        .release-card.minor .release-type {
+            background: rgba(35, 124, 184, 0.2);
+            color: var(--minor-color);
+        }
+        .release-card.patch .release-type {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--patch-color);
+        }
+        .release-card.milestone .release-type {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--milestone-color);
+        }
+
+        .release-summary {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Capability List */
+        .capability-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .capability-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        .capability-icon {
+            flex-shrink: 0;
+        }
+
+        .capability-text {
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .capability-products {
+            display: flex;
+            gap: 0.25rem;
+            flex-shrink: 0;
+        }
+
+        .product-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .product-tag.coder {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--coder-color);
+        }
+        .product-tag.cortex {
+            background: rgba(35, 124, 184, 0.2);
+            color: var(--cortex-color);
+        }
+        .product-tag.kratix {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--kratix-color);
+        }
+
+        /* Future Release */
+        .release-card.future .release-content {
+            border-style: dashed;
+            opacity: 0.7;
+        }
+
+        .release-card.future .release-marker {
+            background: transparent;
+            border: 3px dashed var(--text-muted);
+        }
+
+        .future-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-subtle);
+            animation: fadeIn 0.8s ease-out 0.7s both;
+        }
+
+        .footer-text {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 2rem 1rem;
+            }
+
+            .cadence-info {
+                padding: 1rem;
+            }
+
+            .legend {
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-btn">
+                <span>&larr;</span>
+                <span>Back to Critical Path</span>
+            </a>
+        </nav>
+
+        <header>
+            <div class="logo-badge">CHANGELOG</div>
+            <h1>Release <span class="highlight">Notes</span></h1>
+            <p class="subtitle">Platform capabilities delivered across phases with monthly release cadence and key milestone events</p>
+        </header>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-dot milestone"></div>
+                <span>Milestone Event</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot major"></div>
+                <span>Major Release</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot minor"></div>
+                <span>Minor Release</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot patch"></div>
+                <span>Patch / Update</span>
+            </div>
+        </div>
+
+        <!-- Cadence Info -->
+        <div class="cadence-info">
+            <div class="cadence-item">
+                <div class="cadence-icon">📅</div>
+                <div class="cadence-title">Monthly Releases</div>
+                <div class="cadence-desc">Regular feature updates & improvements</div>
+            </div>
+            <div class="cadence-item">
+                <div class="cadence-icon">🎯</div>
+                <div class="cadence-title">Milestone Events</div>
+                <div class="cadence-desc">Contract signing, phase completions</div>
+            </div>
+            <div class="cadence-item">
+                <div class="cadence-icon">🚀</div>
+                <div class="cadence-title">Key Decisions</div>
+                <div class="cadence-desc">License expansion, scaling triggers</div>
+            </div>
+            <div class="cadence-item">
+                <div class="cadence-icon">🔧</div>
+                <div class="cadence-title">Continuous Updates</div>
+                <div class="cadence-desc">Bug fixes & security patches</div>
+            </div>
+        </div>
+
+        <!-- Releases Timeline -->
+        <div class="releases-container">
+            <div class="timeline-line"></div>
+
+            <!-- Month 0: Platform Orchestration -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <span class="phase-badge phase-0">Month 0</span>
+                    <h2 class="phase-title">Platform Orchestration Setup</h2>
+                </div>
+
+                <div class="release-card major">
+                    <div class="release-meta">
+                        <div class="release-version">v0.1.0</div>
+                        <div class="release-date">Month 0</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Platform Orchestration Setup
+                            <span class="release-type">Major</span>
+                        </div>
+                        <div class="release-summary">Kratix integration with Harness CD pipeline. AKS cluster deployment and promise configuration.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">⚙️</span>
+                                <span class="capability-text">Kratix integrated with Harness CD pipeline</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">☸️</span>
+                                <span class="capability-text">AKS Cluster deployed and configured</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📜</span>
+                                <span class="capability-text">Kratix Promises for known/unknown namespaces</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Month 1: Foundation -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <span class="phase-badge phase-0">Month 1</span>
+                    <h2 class="phase-title">Foundation Setup</h2>
+                </div>
+
+                <div class="release-card milestone">
+                    <div class="release-meta">
+                        <div class="release-version">v0.2.0</div>
+                        <div class="release-date">Month 1</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Contract Execution
+                            <span class="release-type">Milestone</span>
+                        </div>
+                        <div class="release-summary">Official partnership established with Cortex.io. Program kick-off and stakeholder alignment complete.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">✅</span>
+                                <span class="capability-text">VEQ and SaaS Review completed</span>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">✅</span>
+                                <span class="capability-text">MSA negotiated and executed</span>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">✅</span>
+                                <span class="capability-text">Initial license procurement</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card major">
+                    <div class="release-meta">
+                        <div class="release-version">v0.3.0</div>
+                        <div class="release-date">Month 1</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Infrastructure Setup
+                            <span class="release-type">Major</span>
+                        </div>
+                        <div class="release-summary">Core infrastructure components deployed and validated. Platform foundation established.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">📡</span>
+                                <span class="capability-text">Axion Relay installed and operational</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🌐</span>
+                                <span class="capability-text">Network connectivity and firewall rules configured</span>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🎯</span>
+                                <span class="capability-text">Cortex.io application deployed</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card minor">
+                    <div class="release-meta">
+                        <div class="release-version">v0.4.0</div>
+                        <div class="release-date">Month 1</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Development Environment & Data Ingestion
+                            <span class="release-type">Minor</span>
+                        </div>
+                        <div class="release-summary">Coder cloud development environment deployed. CI/CD/CV tool integrations configured.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">💻</span>
+                                <span class="capability-text">Coder cloud dev environment operational</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🔗</span>
+                                <span class="capability-text">Coder + Cortex.io integration enabled</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🔄</span>
+                                <span class="capability-text">Data ingestion: GitHub, GitLab, Nexus, Harness</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🛡️</span>
+                                <span class="capability-text">Security tools: Fortify, Sonatype, SonarQube</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📊</span>
+                                <span class="capability-text">Observability: Dynatrace, Splunk, ServiceNow</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Month 2: PoV Workshop -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <span class="phase-badge phase-1">Month 2</span>
+                    <h2 class="phase-title">PoV Workshop</h2>
+                </div>
+
+                <div class="release-card milestone">
+                    <div class="release-meta">
+                        <div class="release-version">v1.0.0</div>
+                        <div class="release-date">Month 2</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            PoV Workshop Kickoff
+                            <span class="release-type">Milestone</span>
+                        </div>
+                        <div class="release-summary">Proof of Value workshop begins. Demo application deployed with full platform integration.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">☕</span>
+                                <span class="capability-text">Java/SpringBoot demo app deployed</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                    <span class="product-tag cortex">Cortex</span>
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🚀</span>
+                                <span class="capability-text">One-Touch Assembly workflow operational</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">✅</span>
+                                <span class="capability-text">Launch Control & Verify workflows validated</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card minor">
+                    <div class="release-meta">
+                        <div class="release-version">v1.1.0</div>
+                        <div class="release-date">Month 2</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Test Scenarios & Scorecards
+                            <span class="release-type">Minor</span>
+                        </div>
+                        <div class="release-summary">Greenfield and Brownfield test scenarios validated. Production readiness scorecards deployed.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">🌱</span>
+                                <span class="capability-text">Greenfield deployment scenario validated</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🏭</span>
+                                <span class="capability-text">Brownfield migration scenario validated</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📊</span>
+                                <span class="capability-text">Production Readiness scorecard (CQL-based)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📈</span>
+                                <span class="capability-text">Engineering Intelligence dashboards (DORA metrics)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🎯</span>
+                                <span class="capability-text">AppSec SCM Policy initiative — All PoV source code in Enterprise Git (GitHub/GitLab)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card milestone">
+                    <div class="release-meta">
+                        <div class="release-version">v1.2.0</div>
+                        <div class="release-date">Month 2</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            PoV Workshop Complete
+                            <span class="release-type">Milestone</span>
+                        </div>
+                        <div class="release-summary">Proof of Value successfully demonstrated. Stakeholder sign-off obtained. Ready for pilot phase.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">✅</span>
+                                <span class="capability-text">All PoV acceptance criteria met</span>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📝</span>
+                                <span class="capability-text">Stakeholder sign-off documented</span>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📊</span>
+                                <span class="capability-text">ROI metrics validated</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Month 3: Production Pilot -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <span class="phase-badge phase-2">Month 3</span>
+                    <h2 class="phase-title">Production Pilot</h2>
+                </div>
+
+                <div class="release-card major">
+                    <div class="release-meta">
+                        <div class="release-version">v2.0.0</div>
+                        <div class="release-date">Month 3</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Production Pilot Launch
+                            <span class="release-type">Major</span>
+                        </div>
+                        <div class="release-summary">Real Java application onboarded. EKS cluster deployed with production-grade Kratix promises.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">☕</span>
+                                <span class="capability-text">Real Java application onboarded to platform</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                    <span class="product-tag cortex">Cortex</span>
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">☸️</span>
+                                <span class="capability-text">EKS Cluster deployed (AWS)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📜</span>
+                                <span class="capability-text">Kratix Promises configured for EKS</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card minor">
+                    <div class="release-meta">
+                        <div class="release-version">v2.1.0</div>
+                        <div class="release-date">Month 3</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Integration Completion & Training
+                            <span class="release-type">Minor</span>
+                        </div>
+                        <div class="release-summary">All CI/CD/CV integrations validated in production. Developer training and documentation complete.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">✅</span>
+                                <span class="capability-text">All 11 CI/CD/CV integrations production-validated</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🎓</span>
+                                <span class="capability-text">Developer training program launched</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📖</span>
+                                <span class="capability-text">Documentation and runbooks published</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card milestone">
+                    <div class="release-meta">
+                        <div class="release-version">v2.2.0</div>
+                        <div class="release-date">Month 3</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Pilot Success / License Expansion Decision
+                            <span class="release-type">Milestone</span>
+                        </div>
+                        <div class="release-summary">Pilot success metrics achieved. Decision point for license expansion and broader rollout.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">📊</span>
+                                <span class="capability-text">Pilot KPIs achieved and documented</span>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">💰</span>
+                                <span class="capability-text">License expansion business case approved</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🚀</span>
+                                <span class="capability-text">Scale phase approved and funded</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Month 4-6: Cohort 1 - Card Services + Platform Capabilities -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <span class="phase-badge scale">Month 4-6</span>
+                    <h2 class="phase-title">Cohort 1: Card Services (168 Apps)</h2>
+                </div>
+
+                <div class="release-card major future">
+                    <div class="release-meta">
+                        <div class="release-version">v3.0.0</div>
+                        <div class="release-date">Month 4</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            AppSec & QA Layer Instrumentation
+                            <span class="future-tag">Planned</span>
+                        </div>
+                        <div class="release-summary">Application Security and Quality Assurance layers instrumented. Service catalog scaffolds created as apps are onboarded. (~33% of engineering support layers)</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">🛡️</span>
+                                <span class="capability-text">AppSec Layer: Fortify (SAST), Sonatype (SCA), Apiiro integration</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">✅</span>
+                                <span class="capability-text">QA Layer: SauceLabs, qTest, test coverage instrumentation</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📦</span>
+                                <span class="capability-text">Cortex: Java, Python scaffolds added to service catalog</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">💻</span>
+                                <span class="capability-text">Coder: Python, JavaScript workspace templates</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card minor future">
+                    <div class="release-meta">
+                        <div class="release-version">v3.1.0</div>
+                        <div class="release-date">Month 5</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            M&O & Performance Layer Instrumentation
+                            <span class="future-tag">Planned</span>
+                        </div>
+                        <div class="release-summary">Monitoring & Observability and Performance Engineering layers instrumented. Service catalog grows with Cohort 1 patterns. (~67% of engineering support layers)</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">📊</span>
+                                <span class="capability-text">M&O Layer: Dynatrace, Splunk, Moogsoft, Grafana integration</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">⚡</span>
+                                <span class="capability-text">Performance Layer: JMeter, LoadRunner integration</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🎯</span>
+                                <span class="capability-text">Cortex: Marshall Plan initiative tracking (Code quality <80%)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📜</span>
+                                <span class="capability-text">Kratix: Rolling Update & Blue/Green deployment promises</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card major future">
+                    <div class="release-meta">
+                        <div class="release-version">v3.2.0</div>
+                        <div class="release-date">Month 6</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Policy & Docs Layers + Cohort 1 Complete
+                            <span class="future-tag">Planned</span>
+                        </div>
+                        <div class="release-summary">Policy-as-Code and Docs-as-Code layers instrumented. Cohort 1 onboarding complete. Target: ~80% engineering layers instrumented.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">📜</span>
+                                <span class="capability-text">Policy-as-Code Layer: OPA/Rego policy enforcement</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📖</span>
+                                <span class="capability-text">Docs-as-Code Layer: API docs, runbooks, architecture diagrams</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">💳</span>
+                                <span class="capability-text">Cohort 1 Complete: 168 Card Services apps onboarded</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                    <span class="product-tag cortex">Cortex</span>
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">☁️</span>
+                                <span class="capability-text">Kratix: AWS EKS destination promises</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📊</span>
+                                <span class="capability-text">~80% engineering support layers instrumented across Cohort 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Month 7-9: Cohort 2 - Issuer Solutions + Platform Maturity -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <span class="phase-badge scale">Month 7-9</span>
+                    <h2 class="phase-title">Cohort 2: Issuer Solutions (221 Apps)</h2>
+                </div>
+
+                <div class="release-card major future">
+                    <div class="release-meta">
+                        <div class="release-version">v4.0.0</div>
+                        <div class="release-date">Month 7</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Full Language & Build Tool Coverage
+                            <span class="future-tag">Planned</span>
+                        </div>
+                        <div class="release-summary">Complete language runtime coverage driven by Cohort 2 requirements. Service catalog expands with Issuer Solutions patterns.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">💻</span>
+                                <span class="capability-text">Coder: Go, C#/.NET, TypeScript workspace templates</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🔧</span>
+                                <span class="capability-text">Coder: Go Modules, NuGet/MSBuild, Docker/Buildah support</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🖥️</span>
+                                <span class="capability-text">Coder: Windows Server workspace support</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📦</span>
+                                <span class="capability-text">Cortex: All 6 language scaffolds available (~36 catalog entries)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card minor future">
+                    <div class="release-meta">
+                        <div class="release-version">v4.1.0</div>
+                        <div class="release-date">Month 8</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Complete Scorecard Suite
+                            <span class="future-tag">Planned</span>
+                        </div>
+                        <div class="release-summary">All 6 engineering support layer scorecards operational. 100% layer coverage achieved.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">📊</span>
+                                <span class="capability-text">Cortex: All 6 engineering scorecards active (AppSec, QA, M&O, Perf, PaC, Docs)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🏅</span>
+                                <span class="capability-text">Cortex: Bronze/Silver/Gold maturity scoring for all layers</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🎯</span>
+                                <span class="capability-text">Cortex: AppSec SCM Policy initiative — Cohort 2 compliance tracking</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📈</span>
+                                <span class="capability-text">389 apps on platform (~23% of production portfolio)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="release-card major future">
+                    <div class="release-meta">
+                        <div class="release-version">v4.2.0</div>
+                        <div class="release-date">Month 9</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Advanced Deployment Strategies + Cohort 2 Complete
+                            <span class="future-tag">Planned</span>
+                        </div>
+                        <div class="release-summary">Full deployment strategy coverage. Cohort 2 onboarding complete. Enterprise license decision point.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">🐦</span>
+                                <span class="capability-text">Kratix: Canary, Feature flags, A/B testing promises</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">☸️</span>
+                                <span class="capability-text">Kratix: Serverless & VM workload promises</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🏦</span>
+                                <span class="capability-text">Cohort 2 Complete: 221 Issuer Solutions apps onboarded</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                    <span class="product-tag cortex">Cortex</span>
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">📝</span>
+                                <span class="capability-text">Enterprise License Agreement decision point</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Month 10+: Enterprise Scale -->
+            <div class="phase-section">
+                <div class="phase-header">
+                    <span class="phase-badge scale">Month 10+</span>
+                    <h2 class="phase-title">Enterprise Scale (Pending Contract)</h2>
+                </div>
+
+                <div class="release-card milestone future">
+                    <div class="release-meta">
+                        <div class="release-version">v5.0.0</div>
+                        <div class="release-date">Month 10+</div>
+                    </div>
+                    <div class="release-marker"></div>
+                    <div class="release-content">
+                        <div class="release-title">
+                            Full Platform Capability Suite
+                            <span class="future-tag">Pending Buy-Up</span>
+                        </div>
+                        <div class="release-summary">Complete enterprise platform capabilities pending contractual expansion. Full multi-cloud, all workload types, all deployment strategies.</div>
+                        <div class="capability-list">
+                            <div class="capability-item">
+                                <span class="capability-icon">💻</span>
+                                <span class="capability-text">Coder: ~24 workspace templates (all languages, tools, OS)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag coder">Coder</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🧠</span>
+                                <span class="capability-text">Cortex: ~48 catalog configurations (scaffolds, scorecards, workflows)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag cortex">Cortex</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">⚙️</span>
+                                <span class="capability-text">Kratix: ~36 promises (all destinations, workloads, strategies)</span>
+                                <div class="capability-products">
+                                    <span class="product-tag kratix">Kratix</span>
+                                </div>
+                            </div>
+                            <div class="capability-item">
+                                <span class="capability-icon">🎯</span>
+                                <span class="capability-text">Frictionless, Compliant, Resilient platform fully operational</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="footer-text">© Paula Braden • PLATFORM AS A PRODUCT • RELEASE NOTES</p>
+        </footer>
+    </div>
+</body>
+</html>
